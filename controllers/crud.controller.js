@@ -40,7 +40,6 @@ const handleCRUD = (model, operation) => {
                     return sender(result);
 
                 case 'create':
-                   
                     result = await model.create(req.body);
                     return sender(result);
 
