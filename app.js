@@ -6,7 +6,6 @@ const addRouter = require('./routes/add.route')
 const getRouter = require('./routes/get.route')
 const deleteRouter = require('./routes/delete.route')
 const updateRouter = require('./routes/update.route')
-const specialRouter = require('./routes/special.router')
 
 const app = express()
 const dbURI = 'mongodb+srv://Jude:sknj.inc@poscluster.lmglv.mongodb.net/?retryWrites=true&w=majority&appName=posCluster'
@@ -37,5 +36,4 @@ app.use('/api/add',addRouter)
 app.use('/api/get',getRouter)
 app.use('/api/delete',deleteRouter)
 app.use('/api/update',updateRouter)
-app.get('/api/special',specialRouter)
 
