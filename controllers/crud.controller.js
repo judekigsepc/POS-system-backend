@@ -40,7 +40,11 @@ const handleCRUD = (model, operation) => {
                     return sender(result);
 
                 case 'create':
-                    result = await model.create(req.body);
+                    const imagePath = await fileUploader(req,res)
+                    const textData = req.body
+                    textData.imgUrl = await imagePath
+
+                    result = await model.create(textData);
                     return sender(result);
 
                 case 'delete':
@@ -54,6 +58,7 @@ const handleCRUD = (model, operation) => {
                     });
 
                 case 'update':
+                  
                     result = await model.findByIdAndUpdate(id, req.body, { new: true });
                     if (!result)
                         return res

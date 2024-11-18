@@ -23,17 +23,18 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage})
 
 const fileUploader = (req, res) => {
-    // Use multer middleware for handling the file upload
-    upload.single('image')(req, res, (err) => {
-        if (err) {
-            return res.status(500).json({ message: 'Error uploading file', error: err });
-        }
-        if (req.file) {
-            return req.file.path
-        } else {
-            return ''
-        }
-    });
+    return new Promise((resolve,reject) => {
+        upload.single('image') (req,res,(err) => {
+            if(err) {
+                return reject({message:`Error uploading file: ${err}`})
+            }
+            if(req.file) {
+                return resolve(req.file.path)
+            }else {
+                return resolve('')
+            }
+        }) 
+    })
 };
 
 module.exports = {
