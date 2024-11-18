@@ -58,6 +58,8 @@ const handleCRUD = (model, operation) => {
                     });
 
                 case 'update':
+                    const uptImageUrl = await fileUploader(req,res)
+                    req.body.imgUrl = uptImageUrl
                   
                     result = await model.findByIdAndUpdate(id, req.body, { new: true });
                     if (!result)
