@@ -22,7 +22,6 @@ const userSchema = new Schema({
     },
     email: {
         type:String,
-        required:true,
         unique:true,
     },
     tels: [{
@@ -40,6 +39,12 @@ const userSchema = new Schema({
     }
 })
 
+userSchema.pre('validate', function (next) {
+    if(this.names) {
+        this.names = this.names.toUpperCase()
+    } 
+    next()
+}) 
 
 const User = mongoose.model('User',userSchema)
 
