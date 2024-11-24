@@ -87,8 +87,6 @@ const deleteTransaction = handleCRUD(Transaction, 'delete');
 // User Routes
 const getAllUsers = handleCRUD(User, 'getAll');
 const getSingleUser = handleCRUD(User, 'getSingle');
-const createUser = handleCRUD(User, 'create');
-const updateUser = handleCRUD(User, 'update');
 const deleteUser = handleCRUD(User, 'delete');
 
 // Product Routes
@@ -105,11 +103,11 @@ module.exports = {
     createTransaction,
     updateTransaction,
     deleteTransaction,
+
     getAllUsers,
     getSingleUser,
-    createUser,
-    updateUser,
     deleteUser,
+    
     getAllProducts,
     getSingleProduct,
     createProduct,

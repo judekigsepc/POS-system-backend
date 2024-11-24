@@ -1,0 +1,31 @@
+const { Server } = require('socket.io');
+const { calculateTotals } = require('./calculate')
+
+let io;
+
+function initSocket(server) {
+  io = new Server(server, {
+    cors: {
+      origin: 'http://localhost:5173',
+      methods: ['GET', 'POST'],
+    },
+  });
+
+  console.log('Socket.IO initialized');
+
+  io.on('connection', (socket) => {
+   console.log('A user connected', socket.id)
+
+    // Emit a welcome message
+    socket.emit('conn_rec', { text: 'Welcome to the server!' });
+
+    calculateTotals(socket)
+
+    socket.on('disconnect', () => {
+      console.log('A user disconnected:', socket.id);
+    });
+    
+  });
+}
+
+module.exports = { initSocket};

@@ -37,7 +37,7 @@ const userSchema = new Schema({
         required:false,
         default:""
     }
-})
+},{timestamps:true})
 
 userSchema.pre('validate', function (next) {
     if(this.names) {

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {fileUploader} = require('../utils/util')
 
+//Function to register user into the system db
 const register = async (req,res) => {
     try {
         const {names,password} = req.body
@@ -36,6 +37,7 @@ const register = async (req,res) => {
     }
 }
 
+//Function for user login
 const login = async (req,res) => {
     try{
         const {names,password} = req.body 
@@ -70,7 +72,38 @@ const login = async (req,res) => {
    
 }
 
+//Function to enable update of user details
+const userUpdate = async (req,res) => {
+    try {
+        const {password} = req.body
+        const {id} = req.params 
+        
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10)
+            req.body.password = hashedPassword
+        }
+
+        const uptImageUrl = await fileUploader(req,res)
+        req.body.imgUrl = uptImageUrl
+      
+        result = await User.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (!result)
+            return res
+                .status(404)
+                .json({ message: `${model.modelName} record not found for update.` });
+        res.status(200).json(result)
+    }
+    catch(err) {
+        res.status(500).json({
+            error:'Error updating user',
+            details: err.message
+        })
+    }
+}
+
 module.exports = {
     register,
-    login
+    login,
+    userUpdate
 }
