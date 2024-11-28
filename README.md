@@ -1,6 +1,6 @@
 ### POS System
 
-If your  a frontend dev no need for this just skip to [Link to MyFile](MyFile.md)
+If your  a frontend dev no need for this just skip to [Functions js read me file](functions-readme.MD)
 
 This is an ongoing project for a **Point of Sale (POS) system** built to facilitate seamless transaction management, inventory tracking, and customer interaction in businesses. The system is under development, and many features are still being refined.
 
