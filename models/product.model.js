@@ -16,7 +16,7 @@ const productSchema = new Schema({
         type:Number,
         required:true,
     },
-    qty: {
+    inStock: {
         type:Number,
         required:true,
     },
