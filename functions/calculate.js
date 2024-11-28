@@ -1,3 +1,4 @@
+const { Socket } = require('socket.io')
 const Product = require('../models/product.model')
 
 //Calculates the totals provided with the cart array
@@ -26,14 +27,17 @@ const addFunc = async (socket,cart,data) => {
                data.qty = 1
          }
 
-         const {name, price,sku,_id} = await Product.findById(data.prodId)
-         const productSubTotal = Number(data.qty) * Number(price)
+         const {name, price,taxes,discount,sku,_id} = await Product.findById(data.prodId)
+         const goneDiscount = Number(discount)/100 * price
+         const productSubTotal = ((Number(data.qty) * Number(price)) + taxes) - goneDiscount
          const product = {
                id:_id,
                name: name,
                price:price,
                subTotal:productSubTotal,
                sku: sku,
+               tax:taxes,
+               discount:discount,
                qty: data.qty
          }
 
@@ -95,9 +99,40 @@ const deleteFunc = (socket,cart,prodIndex) => {
       }
       //Actual deletion
       cart.cartProducts.splice(prodIndex, 1)
+      cart.cartTotal = totalCalculator(cart.cartProducts)
 
+      const {cartTotal} = cart
       //The command
-      socket.emit('delete_command',prodIndex)
+      socket.emit('delete_command',{prodIndex, cartTotal})
+}
+
+//Cart discounting function
+const cartDiscounter = (socket,cart,data) => {
+      const {discount,type} = data
+      if (typeof(discount) !== 'number') {
+           return errorHandler(socket,'Discount error: discount parameter should be number')
+      }
+
+      const resultEmmiter = () => {
+            const {cartGeneralDiscount, cartTotal} = cart
+            socket.emit('discount_result',{cartGeneralDiscount,cartTotal})
+      }
+
+      if(type === 'flat'){
+          cart.cartTotal = cart.cartTotal - discount
+          cart.cartGeneralDiscount = Number(discount)  
+          
+          resultEmmiter()
+      }
+      else if(type === 'percent') {
+          cart.cartTotal = cart.cartTotal - ((Number(discount)/100) * cart.cartTotal)
+          cart.cartGeneralDiscount = `${discount}%`    
+          
+          resultEmmiter()
+      }else {
+         errorHandler(socket, 'Discount error: Please check your values')
+      }
+      
 }
 
 const paymentComfirmFunc = (socket,cart,method) => {
@@ -108,6 +143,7 @@ const calculateTotals = async (socket) => {
       const cart = {
             cartProducts :[],
             cartTotal: 0,
+            cartGeneralDiscount:0,
       }
       
       socket.on('add_to_cart', async (data) => {
@@ -119,7 +155,9 @@ const calculateTotals = async (socket) => {
       socket.on('delete_from_cart', (prodIndex) => {
              deleteFunc(socket,cart,prodIndex)
       })
-      
+      socket.on('discount_cart', (data) => {
+            cartDiscounter(socket,cart,data)
+      }) 
       socket.on('confirm_pay', (method) => {
             paymentComfirmFunc(socket,cart,method)
       })

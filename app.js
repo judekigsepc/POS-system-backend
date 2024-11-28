@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
-const { initSocket } = require('./functions/rtFunctions'); // Import the socket module
+const { initSocket,generalErrorHandler,notifyer } = require('./functions/rtFunctions'); // Import the socket module
 
 // Route imports
 const addRouter = require('./routes/add.route');
@@ -22,10 +22,19 @@ initSocket(server);
 
 // Database Connection
 const dbURI = process.env.dbURL;
-mongoose
-  .connect(dbURI)
-  .then(() => console.log('Connected to DB successfully'))
-  .catch((err) => console.log(err));
+const dbConnect = async () =>{
+  try {
+    await mongoose.connect(dbURI)
+    console.log('Connected to database successfuly')
+    notifyer('Connected to database succesfully')
+  }
+  catch(err) {
+    console.log(`Error connecting to DB: ${err}`)
+    dbConnect()
+    return generalErrorHandler('Error connecting to database- Please check your internet connection')
+  }
+} 
+dbConnect()
 
 // Middleware
 app.use(cors());

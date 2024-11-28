@@ -27,5 +27,12 @@ function initSocket(server) {
     
   });
 }
+const generalErrorHandler = (error) => {
+  return io.emit('error', error)
+}
+const notifyer = (message) => {
+  return io.emit('notification', message)
+}
 
-module.exports = { initSocket};
+
+module.exports = { initSocket, generalErrorHandler,notifyer};
