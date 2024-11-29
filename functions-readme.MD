@@ -1,4 +1,4 @@
-### POS System API Documentation foe frontend devs
+### POS System API Documentation for frontend devs.Am still working on it so the documentation isn't elaborate.
 
 #### Overview
 
