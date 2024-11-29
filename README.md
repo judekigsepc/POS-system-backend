@@ -1,4 +1,4 @@
-### POS System
+no### POS System
 
 If your  a frontend dev no need for this just skip to [Functions js read me file](functions-readme.MD)
 
@@ -64,16 +64,11 @@ To run the POS system locally, follow these steps:
 1. Start the backend:
    ```bash
    cd backend
-   npm start
+   nodemon app
    ```
+  
 
-2. Start the frontend:
-   ```bash
-   cd frontend
-   npm start
-   ```
-
-Visit **http://localhost:3000** to access the POS system.
+Setup environment variables for port, mongo dB URL and jwt secret key
 
 ---
 
