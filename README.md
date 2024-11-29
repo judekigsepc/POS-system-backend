@@ -41,7 +41,7 @@ To run the POS system locally, follow these steps:
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/pos-system.git
+   git clone https://github.com/judekigsepc/pos-system.git
    cd pos-system
    ```
 
