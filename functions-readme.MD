@@ -21,7 +21,8 @@ Many features are under active development, including advanced security measures
 
 ### API Endpoints & Functions
 This was developed in a react environment so am not sure of how it works with vanilla js.
-1. copy the file to your directory and install socket.io-client and axios dependencies. The rest is as seen below
+1. copy the file to your directory and install socket.io-client and axios dependencies. The rest is as seen below.
+
 Below is an outline of key API calls and their respective functionalities.
 
 #### 1. **getAll** (Retrieve all records)
