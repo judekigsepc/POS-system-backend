@@ -4,10 +4,14 @@ const {Schema} = mongoose
 const {timeSetter} = require('../utils/util.js')
 
 const itemSubSchema = new Schema({
-    item: {
+    itemId: {
         type:mongoose.Schema.Types.ObjectId,
         ref:'Product',
         required: true,
+    },
+    name: {
+      type:String,
+      required:true,
     },
     itemQty:{
         type:Number,
@@ -17,6 +21,14 @@ const itemSubSchema = new Schema({
     unitPrice:{
         type:Number,
         required:true,
+    },
+    discount:{
+        type:String,
+        required:true,
+    },
+    subTotal :{
+      type:Number,
+      required:true,
     }
 })
 
@@ -36,23 +48,22 @@ const transactionSchema = new Schema({
       default: 0,
     },
     discount: {
-      type: Number,
+      type: String,
       default: 0,
+    },
+    payedAmount: {
+      type:Number,
+      required:true,
     },
     paymentMethod: {
       type: String,
       enum: ['Cash', 'Credit Card', 'Mobile Money', 'Bank Transfer'],
       required: true,
     },
-    paymentStatus: {
-      type: String,
-      enum: ['Pending', 'Completed', 'Failed', 'Refunded'],
-      default: 'Pending',
-    },
-    status: {
-      type: String,
-      enum: ['Completed', 'Pending', 'Canceled', 'Refunded'],
-      default: 'Pending',
+    type:{
+      type:String,
+      enum:['purchase','refund'],
+      required:true,
     },
     notes: {
       type: String,

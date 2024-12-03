@@ -1,5 +1,8 @@
-const { Socket } = require('socket.io')
 const Product = require('../models/product.model')
+const Transaction = require('../models/transaction.model')
+
+const {errorHandler} = require('../utils/util')
+const {paymentFunc, confirmPaymentFunc} = require('./payments')
 
 //Calculates the totals provided with the cart array
 const totalCalculator = (product) => {
@@ -8,11 +11,6 @@ const totalCalculator = (product) => {
           total += product.subTotal
       })
       return total
-}
-
-//Error emitter
-const errorHandler =  (socket,err) => {
-      return socket.emit('error',err)
 }
 
 //Function to add to cart
@@ -27,8 +25,16 @@ const addFunc = async (socket,cart,data) => {
                data.qty = 1
          }
 
-         const {name, price,taxes,discount,sku,_id} = await Product.findById(data.prodId)
-         const goneDiscount = Number(discount)/100 * price
+         const {name, price,taxes,discount,discountType,units,sku,_id} = await Product.findById(data.prodId)
+         let goneDiscount
+         if(discountType === 'percent') {
+            goneDiscount = discount /100 * price
+         }else if(discountType === 'flat') {
+            goneDiscount = discount
+         }else {
+            return errorHandler(socket,'I donno what type of fucked scenario would cause this kind of error')
+         }
+
          const productSubTotal = ((Number(data.qty) * Number(price)) + taxes) - goneDiscount
          const product = {
                id:_id,
@@ -38,12 +44,15 @@ const addFunc = async (socket,cart,data) => {
                sku: sku,
                tax:taxes,
                discount:discount,
-               qty: data.qty
+               discountType:discountType,
+               qty: data.qty,
+               units:units,
          }
 
          const exisitingProduct = cart.cartProducts.some(prod => prod.name == product.name)
          if(exisitingProduct) {
-               return errorHandler(socket, 'Product already in cart')
+            return errorHandler(socket, 'Product already in cart')
+            return cart.cartProducts.some(prod => prod.name == product.name).qty += 1
          }
          cart.cartProducts.push(product)
          cart.cartTotal = totalCalculator(cart.cartProducts)
@@ -89,7 +98,7 @@ const updatorFunc = (socket,cart,data) => {
 //Function to delete from cart
 const deleteFunc = (socket,cart,prodIndex) => {
       //Checking product index validity
-      if (!prodIndex || typeof(prodIndex) === 'string') {
+      if (!prodIndex || typeof(prodIndex) !== 'number') {
             errorHandler(socket, 'Deletion Error : Invalid deletion parameter. Should be string')
       }
       //Checking product availability
@@ -120,7 +129,7 @@ const cartDiscounter = (socket,cart,data) => {
 
       if(type === 'flat'){
           cart.cartTotal = cart.cartTotal - discount
-          cart.cartGeneralDiscount = Number(discount)  
+          cart.cartGeneralDiscount = `${discount} - flat` 
           
           resultEmmiter()
       }
@@ -135,9 +144,6 @@ const cartDiscounter = (socket,cart,data) => {
       
 }
 
-const paymentComfirmFunc = (socket,cart,method) => {
-      const {cartProducts,cartTotal} = cart
-}
 
 const calculateTotals = async (socket) => {
       const cart = {
@@ -145,7 +151,12 @@ const calculateTotals = async (socket) => {
             cartTotal: 0,
             cartGeneralDiscount:0,
       }
-      
+      const payDetails = {
+            expenditure : Number(cart.cartTotal),
+            payed : 0,
+            change:0,
+      }
+
       socket.on('add_to_cart', async (data) => {
               addFunc(socket,cart,data)
       })
@@ -158,8 +169,11 @@ const calculateTotals = async (socket) => {
       socket.on('discount_cart', (data) => {
             cartDiscounter(socket,cart,data)
       }) 
-      socket.on('confirm_pay', (method) => {
-            paymentComfirmFunc(socket,cart,method)
+      socket.on('payment', (amount) => {
+            paymentFunc(socket,cart,payDetails,amount)
+      })
+      socket.on('confirm_payment', (data) => {
+            confirmPaymentFunc(socket,cart,payDetails,data)
       })
 }
 module.exports = {calculateTotals}

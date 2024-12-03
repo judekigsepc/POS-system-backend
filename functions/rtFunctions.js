@@ -16,9 +16,6 @@ function initSocket(server) {
   io.on('connection', (socket) => {
    console.log('A user connected', socket.id)
 
-    // Emit a welcome message
-    socket.emit('conn_rec', { text: 'Welcome to the server!' });
-
     calculateTotals(socket)
 
     socket.on('disconnect', () => {

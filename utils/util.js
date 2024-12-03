@@ -14,7 +14,7 @@ const timeSetter = async() => {
 
 const storage = multer.diskStorage({
     destination: function(req,file,cb) {
-         cb(null,path.join(__dirname,'../images'))
+         cb(null,path.join(__dirname,'../public/images'))
     },
     filename: function (req,file,cb) {
         cb(null,Date.now() + '-' + file.originalname )
@@ -30,7 +30,7 @@ const fileUploader = (req, res) => {
                 return reject({message:`Error uploading file: ${err}`})
             }
             if(req.file) {
-                return resolve(`/images/${req.file.filename}`)
+                return resolve(`public/images/${req.file.filename}`)
             }else {
                 return resolve('')
             }
@@ -60,10 +60,16 @@ const adminOnly = (req,res,next) => {
     }
     next()
 }
+
+//Error emitter
+const errorHandler =  (socket,err) => {
+    return socket.emit('error',err)
+}
   
 module.exports = {
     timeSetter,
     fileUploader,
     authenticateToken,
-    adminOnly
+    adminOnly,
+    errorHandler
 }

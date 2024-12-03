@@ -1,6 +1,7 @@
 const Transaction = require('../models/transaction.model');
 const User = require('../models/user.model');
 const Product = require('../models/product.model');
+const Busines = require('../models/business.model')
 
 const {fileUploader} = require('../utils/util')
 
@@ -77,6 +78,10 @@ const handleCRUD = (model, operation) => {
     };
 };
 
+//Business routes
+const createBusinessDetails = handleCRUD(Busines, 'create')
+const updateBusinessDetails = handleCRUD(Busines, 'update')
+
 // Transaction Routes
 const getAllTransactions = handleCRUD(Transaction, 'getAll');
 const getSingleTransaction = handleCRUD(Transaction, 'getSingle');
@@ -98,6 +103,9 @@ const deleteProduct = handleCRUD(Product, 'delete');
 
 // Exporting Controllers
 module.exports = {
+    createBusinessDetails,
+    updateBusinessDetails,
+
     getAllTransactions,
     getSingleTransaction,
     createTransaction,

@@ -20,6 +20,10 @@ const productSchema = new Schema({
         type:Number,
         required:true,
     },
+    units: {
+        type:String,
+        default:'unit',
+    },
     sku: {
         type:String,
         required:true,
@@ -34,6 +38,11 @@ const productSchema = new Schema({
         min:0,
         max:100,
         default:0,
+    },
+    discountType: {
+        type:String,
+        required:true,
+        enum:['flat','percent']
     },
     taxes: {
         type:Number,
