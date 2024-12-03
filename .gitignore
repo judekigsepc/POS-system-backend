@@ -24,7 +24,6 @@ npm-debug.log
 # Build and distribution files
 /dist
 /build
-/public
 
 # Other potential directories
 /coverage
