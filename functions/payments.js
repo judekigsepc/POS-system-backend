@@ -3,6 +3,7 @@ const Product = require("../models/product.model")
 
 const {timeSetter} = require('../utils/util')
 const { errorHandler } = require("../utils/util") 
+const { generateInvoice} = require("./docFunctions")
 
 //Function to handle payment
 const paymentFunc = (socket,cart,payDetails,payment) => {
@@ -44,11 +45,12 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
     })
    
     const transaction = {
+          executor: executor,
           items : itemsArray,
           transDate: await timeSetter(),
-          executor: executor,
-          transactionTotal: expenditure,
-          discount: cartGeneralDiscount,
+          generalDiscount: cartGeneralDiscount,
+          //     generalTax:generalTax,
+          totalCostPrice: expenditure,
           payedAmount: payed,
           change: change,
           paymentMethod:'Cash',
@@ -57,7 +59,8 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
           notes:notes,
     }
     try{
-      const savedTransaction = await Transaction.create(transaction)   
+      const savedTransaction = await Transaction.create(transaction)  
+      generateInvoice(savedTransaction)
       cart.cartProducts = []
       cart.cartGeneralDiscount = 0
     }

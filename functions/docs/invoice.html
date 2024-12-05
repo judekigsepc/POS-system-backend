@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4 {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h3 {
+            font-weight: bold;
+            color: #333;
+        }
+
+        h4 {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>{{businessName}}</h1>
+    <h2>Purchase Invoice</h2>
+    <h3>Invoice ID: {{transactionId}}</h3>
+    <h3>Executor: {{userName}}</h3>
+    <h3>Transaction Date: {{transDate}}</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Discount</th>
+                <th>Tax</th>
+                <th>Sub Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}} 
+            <tr>
+                <td>{{name}}</td>
+                <td>{{unitPrice}}</td>
+                <td>{{itemQty}}</td>
+                <td>{{discount}}</td>
+                <td>{{tax}}</td>
+                <td>{{subTotal}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <h4>Discount: {{curr}} {{generalDiscount}}</h4>
+    <h3>Grand Total: {{curr}} {{grandTotal}}</h3>
+    <h3>Amount Paid: {{curr}}{{payedAmount}}</h3>
+    <h3>Change: {{curr}} {{change}}</h3>
+
+</body>
+</html>

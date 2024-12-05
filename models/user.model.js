@@ -26,7 +26,7 @@ const userSchema = new Schema({
     },
     tels: [{
         type:String,
-        require:true,
+        required:true,
     }],
     role:{
         type:String,

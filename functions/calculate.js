@@ -34,7 +34,7 @@ const addFunc = async (socket,cart,data) => {
          }else {
             return errorHandler(socket,'I donno what type of fucked scenario would cause this kind of error')
          }
-
+         
          const productSubTotal = ((Number(data.qty) * Number(price)) + taxes) - goneDiscount
          const product = {
                id:_id,
@@ -129,7 +129,7 @@ const cartDiscounter = (socket,cart,data) => {
 
       if(type === 'flat'){
           cart.cartTotal = cart.cartTotal - discount
-          cart.cartGeneralDiscount = `${discount} - flat` 
+          cart.cartGeneralDiscount = `${discount} (flat)` 
           
           resultEmmiter()
       }

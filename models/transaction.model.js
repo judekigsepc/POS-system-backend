@@ -25,6 +25,12 @@ const itemSubSchema = new Schema({
     discount:{
         type:String,
         required:true,
+        default:0
+    },
+    tax:{
+        type:String,
+        required:true,
+        default:0
     },
     subTotal :{
       type:Number,
@@ -33,25 +39,33 @@ const itemSubSchema = new Schema({
 })
 
 const transactionSchema = new Schema({
+    executor: {
+    type: mongoose.Types.ObjectId,
+    ref: 'User',
+    required: true,
+   },
     items: [itemSubSchema],
     transDate: {
       type: Date,
     },
-    executor: {
-      type: mongoose.Types.ObjectId,
-      ref: 'User',
-      required: true,
+    generalDiscount: {
+      type: String,
+      default: 0,
     },
-    totalPrice: {
+    generalTax: {
+      type: String,
+      default: 0,
+    },
+    totalCostPrice: {
       type: Number,
       required: true,
       default: 0,
     },
-    discount: {
-      type: String,
-      default: 0,
-    },
     payedAmount: {
+      type:Number,
+      required:true,
+    },
+    change: {
       type:Number,
       required:true,
     },
