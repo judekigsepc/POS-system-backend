@@ -71,7 +71,16 @@
                 <td>{{name}}</td>
                 <td>{{unitPrice}}</td>
                 <td>{{itemQty}}</td>
-                <td>{{discount}}</td>
+                <td>
+                {{#if (eq discountType 'percent')}}
+                    {{discount}} %
+                {{else if (eq discountType 'flat')}}
+                    {{discount}} (flat)
+                {{else}}
+                    {{discount}}
+                {{/if}}
+
+                </td>
                 <td>{{tax}}</td>
                 <td>{{subTotal}}</td>
             </tr>

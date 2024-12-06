@@ -4,18 +4,18 @@ const path = require('path')
 const puppeteer = require('puppeteer')
 const { error } = require('console')
 
-const Product = require('../models/product.model')
-const Business = require('../models/business.model')
+const Busines = require('../models/business.model')
 const User = require('../models/user.model')
 
-Handlebars.create().compileOptions = {
-    allowProtoPropertiesByDefault: true,
-};
+Handlebars.registerHelper('eq', function (arg1, arg2) {
+    return arg1 === arg2;
+  });
 
 const generateInvoice = async (savedTransaction) => {
     const {_id,items,transDate,executor,totalCostPrice,generalDiscount,payedAmount,change,paymentMethod} = savedTransaction
-    const {business} = await Business.find({})
     const {names} = await User.findById(executor)
+    const [business] = await Busines.find({})
+    const {businessName} = business
 
    const itemList = items.map(item => ({
    ...item._doc, // Extract the actual data
@@ -23,9 +23,10 @@ const generateInvoice = async (savedTransaction) => {
   _id: item._doc._id.toString()       // Convert _id to string
 }));
 
+console.log(itemList)
 
     const data = {
-        businessName: business,
+        businessName,
         transactionId: _id,
         userName: names,
         transDate:transDate,

@@ -39,6 +39,7 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
                 itemQty: product.qty,
                 unitPrice: product.price,
                 discount:`${product.discount}`,
+                discountType:product.discountType,
                 subTotal: product.subTotal
           }
           itemsArray.push(item)

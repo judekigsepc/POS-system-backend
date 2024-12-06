@@ -27,6 +27,10 @@ const itemSubSchema = new Schema({
         required:true,
         default:0
     },
+    discountType: {
+        type:String,
+        required:true,
+    },
     tax:{
         type:String,
         required:true,
