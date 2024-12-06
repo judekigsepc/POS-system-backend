@@ -11,7 +11,7 @@ Handlebars.registerHelper('eq', function (arg1, arg2) {
     return arg1 === arg2;
   });
 
-const generateInvoice = async (savedTransaction) => {
+const generateInvoice = async (socket, savedTransaction) => {
     const {_id,items,transDate,executor,totalCostPrice,generalDiscount,payedAmount,change,paymentMethod} = savedTransaction
     const {names} = await User.findById(executor)
     const [business] = await Busines.find({})
@@ -49,10 +49,10 @@ console.log(itemList)
     // Inject the data
     const renderedHtml = template(data);
     
-    pdfGen(renderedHtml)
+    pdfGen(socket, renderedHtml)
 }
 
-const pdfGen = async (renderedHtml) => {
+const pdfGen = async (socket, renderedHtml) => {
     try{
         const browser = await puppeteer.launch()
         const page = await browser.newPage()
@@ -69,8 +69,8 @@ const pdfGen = async (renderedHtml) => {
           });
       
           await browser.close();
-          console.log(`PDF generated and saved to ${pdfPath}`);
 
+          pdfGenHandler(socket, `public/documents/${invoicename}`)
     }catch(err) {
         console.log(`PDF GENERATION FAILED ${err}`)
     }
@@ -85,6 +85,10 @@ const randomInvoiceNameGenerator = async () => {
         console.log(error)
     }
    
+}
+
+const pdfGenHandler = async (socket,pdfPath) => {
+       socket.emit('pdf-invoice',pdfPath)
 }
 
 module.exports = {

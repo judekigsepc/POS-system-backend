@@ -61,7 +61,7 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
     }
     try{
       const savedTransaction = await Transaction.create(transaction)  
-      generateInvoice(savedTransaction)
+      generateInvoice(socket, savedTransaction)
       cart.cartProducts = []
       cart.cartGeneralDiscount = 0
     }
