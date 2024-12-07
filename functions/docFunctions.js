@@ -1,97 +1,108 @@
 const fs = require('fs')
-const Handlebars = require('handlebars')
 const path = require('path')
-const puppeteer = require('puppeteer')
-const { error } = require('console')
 
-const Busines = require('../models/business.model')
+const Handlebars = require('handlebars')
+const puppeteer = require('puppeteer')
+
+const Business = require('../models/business.model')
 const User = require('../models/user.model')
+const Transaction = require('../models/transaction.model')
+
+const {errorHandler, successMessageHandler} = require('../utils/util')
+
+const generateInvoice = async (socket, savedTransaction) => {
+         fillInvoiceTemplate(socket,savedTransaction)
+}
 
 Handlebars.registerHelper('eq', function (arg1, arg2) {
     return arg1 === arg2;
   });
 
-const generateInvoice = async (socket, savedTransaction) => {
-    const {_id,items,transDate,executor,totalCostPrice,generalDiscount,payedAmount,change,paymentMethod} = savedTransaction
-    const {names} = await User.findById(executor)
-    const [business] = await Busines.find({})
-    const {businessName} = business
+//Function that fills the invoice template
+const fillInvoiceTemplate = async (socket,savedTransaction) => {
+    try{
+        const {_id,items,transDate,executor,totalCostPrice,generalDiscount,payedAmount,change,paymentMethod} = savedTransaction
+        const business = await Business.find({})
 
-   const itemList = items.map(item => ({
-   ...item._doc, // Extract the actual data
-   itemId: item._doc.itemId.toString(), // Convert ObjectId to string
-  _id: item._doc._id.toString()       // Convert _id to string
-}));
+         const {names} = await User.findById(executor)
+       
+        
+        const {businessName,currency, VATNumber, address,contactInfo} = business[0]
+        const itemList = items.map(item => ({
+            ...item._doc
+        }))
 
-console.log(itemList)
+        const data = {
+            businessName,
+            transactionId: _id,
+            userName: names,
+            transDate:transDate,
+            items:itemList,
+            generalDiscount:generalDiscount,
+            payedAmount:payedAmount,
+            grandTotal:totalCostPrice,
+            change:change, 
+            curr: currency,
+        }
+    
+        const templatePath = path.join(__dirname,'./docs/invoice.html')
+        const templateSource = fs.readFileSync(templatePath, 'utf-8')
 
-    const data = {
-        businessName,
-        transactionId: _id,
-        userName: names,
-        transDate:transDate,
-        items:itemList,
-        generalDiscount:generalDiscount,
-        payedAmount:payedAmount,
-        grandTotal:totalCostPrice,
-        change:change, 
-        curr:'UGX '
+        const template = Handlebars.compile(templateSource)
+
+        const renderedHTML = template(data)
+        
+        generateInvoicePDF(socket,renderedHTML,_id)
     }
-
-    const templatePath = path.join(__dirname, './docs/invoice.html');
-    const templateSource = fs.readFileSync(templatePath, 'utf-8');
-    
-    // Compile the template
-    const template = Handlebars.compile(templateSource, {
-        allowProtoPropertiesByDefault: true,
-    });
-    
-    // Inject the data
-    const renderedHtml = template(data);
-    
-    pdfGen(socket, renderedHtml)
+    catch(err) {
+         errorHandler(socket,`Invoice Error: ${err}`)
+    }
 }
 
-const pdfGen = async (socket, renderedHtml) => {
-    try{
+//Function that generates the pdf for the invoice
+const generateInvoicePDF = async (socket,renderedHTML,transactionId) => {
+    try {
         const browser = await puppeteer.launch()
         const page = await browser.newPage()
 
-        await page.setContent(renderedHtml);
-        const invoicename = await randomInvoiceNameGenerator()
-    
-        const pdfPath = path.join(__dirname,`../public/documents/${invoicename}`)
-    
+        await page.setContent(renderedHTML)
+        const invoiceName = invoiceNameGenerator(transactionId)
+
+        const pdfPath = path.join(__dirname, `../public/documents/${invoiceName}.pdf`)
+
         await page.pdf({
-            path: pdfPath,  // Path to save the generated PDF
-            format: 'A4',   // Paper size
-            printBackground: true  // Include background in the PDF
-          });
-      
-          await browser.close();
+            path: pdfPath,
+            format:'A4',
+            printBackground: true
+        })
 
-          pdfGenHandler(socket, `public/documents/${invoicename}`)
-    }catch(err) {
-        console.log(`PDF GENERATION FAILED ${err}`)
+        await browser.close()
+
+        attachInvoiceToTransaction(socket,invoiceName,transactionId)
+        successMessageHandler(socket,`Invoice PDF generated and saved successfuly`)
     }
-}
-
-const randomInvoiceNameGenerator = async () => {
-    try {
-        const date = Date.now()
-        const filename = `invoice-${date}.pdf`
-        return filename
-    }catch(err) {
-        console.log(error)
+    catch(err) {
+        errorHandler(socket, `Invoice Error: ${err}`)
     }
-   
+
 }
 
-const pdfGenHandler = async (socket,pdfPath) => {
-       socket.emit('pdf-invoice',pdfPath)
+//Function that saves the invoice path to invoiceURL of the transaction
+const attachInvoiceToTransaction = async (socket, invoiceName,transactionId) => {
+     try{
+        await Transaction.findByIdAndUpdate(transactionId, {invoiceUrl: `public/documents/${invoiceName}.pdf`},{new: true})
+     }  
+     catch(err) {
+         errorHandler(socket, `Invoice attachment Error: ${err}`)
+     }  
 }
+
+//Function that generates the invoice name string
+const invoiceNameGenerator = (transactionId) => {
+    const date = Date.now()
+    return `invoice-${transactionId}-${date}`
+} 
 
 module.exports = {
     generateInvoice
 }
-

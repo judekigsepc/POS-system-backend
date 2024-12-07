@@ -62,15 +62,27 @@ const adminOnly = (req,res,next) => {
 }
 
 
-//Error emitter
+//Sockets error emitter
 const errorHandler =  (socket,err) => {
     return socket.emit('error',err)
 }
-  
+
+//Socket message or stage emmiter
+const messageHandler = (socket,msg) => {
+    return socket.emit('socket-message', msg)
+}
+
+//Success message emitter
+const successMessageHandler = (socket,msg) => {
+    return socket.emit('socket-success-message', msg)
+}
+
 module.exports = {
     timeSetter,
     fileUploader,
     authenticateToken,
     adminOnly,
-    errorHandler
+    errorHandler,
+    messageHandler,
+    successMessageHandler
 }

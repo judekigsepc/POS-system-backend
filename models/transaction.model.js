@@ -87,6 +87,10 @@ const transactionSchema = new Schema({
       type: String,
       default: '',
     },
+    invoiceUrl: {
+      type:String,
+      default:'',
+    },
   },{timestamps:true});
   
 transactionSchema.pre('save', async function (next) {

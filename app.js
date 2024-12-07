@@ -14,6 +14,7 @@ const deleteRouter = require('./routes/delete.route');
 const updateRouter = require('./routes/update.route');
 const authRouter = require('./routes/auth.route');
 
+
 const app = express();
 const server = http.createServer(app);
 
@@ -40,7 +41,7 @@ dbConnect()
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/images', express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.get('/', (req, res) => {

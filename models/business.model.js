@@ -31,10 +31,19 @@ const businessSchema = new mongoose.Schema({
     },
     imgURL: {
         type:String,
+        default:'',
     },
-    
+    currency: {
+        type:String,
+        required:true,
+        default:'UGX'
+    },
+    VATNumber: {
+        type:String,
+        required:true,
+    }
 },{timestamps:true});
 
-const Busines = mongoose.model('Business', businessSchema);
+const Business = mongoose.model('Business', businessSchema);
 
-module.exports = Busines;
+module.exports = Business;
