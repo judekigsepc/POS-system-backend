@@ -68,8 +68,8 @@ const errorHandler =  (socket,err) => {
 }
 
 //Socket message or stage emmiter
-const messageHandler = (socket,msg) => {
-    return socket.emit('socket-message', msg)
+const messageHandler = (socket,flag,msg) => {
+    return socket.emit('socket-message', flag, msg)
 }
 
 //Success message emitter

@@ -1,13 +1,19 @@
 const Transaction = require("../models/transaction.model")
 
-const {timeSetter, errorHandler, messageHandler} = require('../utils/util')
+const {timeSetter, errorHandler, messageHandler, successMessageHandler} = require('../utils/util')
+const { validateIfNumber, validateIfString, validateMultipleStrings, validateMultipleNumbers } = require("../utils/validationUtils")
+
 const { generateInvoice} = require("./docFunctions")
 
 //Function to handle payment
 const paymentFunc = (socket,cart,payDetails,payment) => {
-    if(!payment || typeof(payment) !== 'number') {
-          return errorHandler(socket,'Payment Error: Payment parameter should be number')
-    }
+      try{
+            validateIfNumber(payment,'Payment Error: Payment value not present or Invalid(Should be string)')
+        }
+        catch(err) {
+            return errorHandler(socket, err.message)
+        }
+
     const {cartTotal} = cart
     const change = Number(payment) - cartTotal
     if (change < 0) {
@@ -21,14 +27,23 @@ const paymentFunc = (socket,cart,payDetails,payment) => {
 
 //Function to confirm payment, generate receipt and update iinventory
 const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
-    
-    try{
       const {type,notes,executor} =  data
       const {expenditure,payed,change} = payDetails
       const {cartProducts,cartTotal,cartGeneralDiscount} = cart
   
-      messageHandler(socket, 'Processing transaction')
-      
+      try{
+        messageHandler(socket, 'task', 'Processing transaction')
+        
+        const error = 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid'
+        validateMultipleStrings([type, notes, executor], error)
+        validateMultipleNumbers([expenditure,payed,change],error )
+      }
+      catch(err) {
+            return errorHandler(socket, `Transaction Error: ${err.message}`)
+      }
+
+    try{
+     
       if(!type || !notes || !executor || !expenditure || !payed || !change) {
           return errorHandler(socket, 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid')
       }
@@ -67,7 +82,7 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
 
 
       const savedTransaction = await Transaction.create(transaction)  
-      messageHandler(socket, 'Transaction proccessed successuly. Now generating invoice..')
+      successMessageHandler(socket, 'Transaction proccessed successuly. Now generating invoice..')
 
       generateInvoice(socket, savedTransaction)
      //I should handle cart clearing logic here

@@ -3,6 +3,8 @@ const Transaction = require('../models/transaction.model')
 
 const {errorHandler} = require('../utils/util')
 const {paymentFunc, confirmPaymentFunc} = require('./payments')
+const {printInvoice, emailInvoice} = require('./invoiceActions')
+const { validateIfNumber, validateIfString, validateMultipleNumbers } = require('../utils/validationUtils')
 
 //Calculates the totals provided with the cart array
 const totalCalculator = (product) => {
@@ -19,13 +21,20 @@ const addFunc = async (socket,cart,data) => {
             return console.error(socket, 'Internal server error');     
       }
       if(!data.prodId) {
-            errorHandler(socket,'No product id')
+            return errorHandler(socket,'No product id')
          }
          if (!data.qty) {
                data.qty = 1
          }
+      
+         //Check if product exists in database
+         const wantedProduct = await Product.findById(data.prodId)
+         if(!wantedProduct) {
+              errorHandler(socket, 'Product Not found in database')
+         }
 
-         const {name, price,taxes,discount,discountType,units,sku,_id} = await Product.findById(data.prodId)
+         const {name, price,taxes,discount,discountType,units,sku,_id} = wantedProduct
+
          let goneDiscount
          if(discountType === 'percent') {
             goneDiscount = discount /100 * price
@@ -67,10 +76,17 @@ const updatorFunc = (socket,cart,data) => {
 
       //Check for presence and validity of the data types
       //TODO : FIX ZERO VALIDATION ISSUE
-      if( !prodIndex || !qty || typeof(prodIndex) !== 'number' || typeof(qty) !== 'number') {
-            return errorHandler(socket, 'Invalid data or data types in cart updater. Values should be numbers')
+      try{
+            validateMultipleNumbers([prodIndex, qty], 'Product index or quamtity may not be present or is Invalid(Should be string)')
       }
-      else if (cart.cartProducts.length == 0) {
+      catch(err) {
+           return errorHandler(socket, `Product Update Error: ${err.message}`)
+      }
+
+      // if( !prodIndex || !qty || typeof(prodIndex) !== 'number' || typeof(qty) !== 'number') {
+      //       return errorHandler(socket, 'Invalid data or data types in cart updater. Values should be numbers')
+      // }
+      if (cart.cartProducts.length == 0) {
             return errorHandler(socket, 'Your cart is empty. There is nothing to update.')
       }
 
@@ -98,14 +114,19 @@ const updatorFunc = (socket,cart,data) => {
 //Function to delete from cart
 const deleteFunc = (socket,cart,prodIndex) => {
       //Checking product index validity
-      if (!prodIndex || typeof(prodIndex) !== 'number') {
-            errorHandler(socket, 'Deletion Error : Invalid deletion parameter. Should be string')
+      try {
+            validateIfNumber(prodIndex, 'Deletion Error: product index is not present or is Invalid(Should be number)')
+         }
+         catch(err) {
+             return errorHandler(socket, `Deletion Error: ${err.message}`)
       }
+   
       //Checking product availability
       const productToDelete = cart.cartProducts[prodIndex]
       if(!productToDelete) {
             return errorHandler(socket, 'Product to delete is not in cart')
       }
+
       //Actual deletion
       cart.cartProducts.splice(prodIndex, 1)
       cart.cartTotal = totalCalculator(cart.cartProducts)
@@ -118,8 +139,16 @@ const deleteFunc = (socket,cart,prodIndex) => {
 //Cart discounting function
 const cartDiscounter = (socket,cart,data) => {
       const {discount,type} = data
-      if (typeof(discount) !== 'number') {
-           return errorHandler(socket,'Discount error: discount parameter should be number')
+     
+      try {
+         if(cart.cartProducts.length < 1) {
+           return errorHandler(socket, 'Discounting Error: Cart is empty')
+         }
+         validateIfNumber(discount, 'Discounting Error: Discount VALUE is not present or is Invalid')
+         validateIfString(type, 'Discounting Error: Discount TYPE is not present or is Invalid')
+      }
+      catch(err) {
+          return errorHandler(socket, `Discounting Error : ${err.message}`)
       }
 
       const resultEmmiter = () => {
@@ -127,19 +156,19 @@ const cartDiscounter = (socket,cart,data) => {
             socket.emit('discount_result',{cartGeneralDiscount,cartTotal})
       }
 
-      if(type === 'flat'){
+      if(type.toUpperCase() == 'FLAT'){
           cart.cartTotal = cart.cartTotal - discount
           cart.cartGeneralDiscount = `${discount} (flat)` 
           
           resultEmmiter()
       }
-      else if(type === 'percent') {
+      else if(type.toUpperCase() == 'PERCENT') {
           cart.cartTotal = cart.cartTotal - ((Number(discount)/100) * cart.cartTotal)
-          cart.cartGeneralDiscount = `${discount}%`    
-          
+          cart.cartGeneralDiscount = `${discount}%`
+
           resultEmmiter()
       }else {
-         errorHandler(socket, 'Discount error: Please check your values')
+         errorHandler(socket, 'Discount error: Please check your values(Discount type parameter should be FLAT OR PERCENT)')
       }
       
 }
@@ -174,6 +203,12 @@ const calculateTotals = async (socket) => {
       })
       socket.on('confirm_payment', (data) => {
             confirmPaymentFunc(socket,cart,payDetails,data)
+      })
+      socket.on('print-invoice',(invoiceName) => {
+            printInvoice(socket, invoiceName)
+      })
+      socket.on('email-invoice',(invoiceName, reEmail) => {
+            emailInvoice(socket, invoiceName, reEmail)
       })
 }
 module.exports = {calculateTotals}
