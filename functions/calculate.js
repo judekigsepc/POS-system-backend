@@ -75,7 +75,6 @@ const updatorFunc = (socket,cart,data) => {
       const {prodIndex, qty} = data 
 
       //Check for presence and validity of the data types
-      //TODO : FIX ZERO VALIDATION ISSUE
       try{
             validateMultipleNumbers([prodIndex, qty], 'Product index or quamtity may not be present or is Invalid(Should be string)')
       }

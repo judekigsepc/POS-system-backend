@@ -91,7 +91,7 @@ const generateInvoicePDF = async (socket,renderedHTML,transactionId) => {
 //Function that saves the invoice path to invoiceURL of the transaction
 const attachInvoiceToTransaction = async (socket, invoiceName,transactionId) => {
      try{
-        await Transaction.findByIdAndUpdate(transactionId, {invoiceUrl: `public/documents/${invoiceName}.pdf`},{new: true})
+        await Transaction.findByIdAndUpdate(transactionId, {invoiceUrl: `${invoiceName}.pdf`},{new: true})
      }  
      catch(err) {
          errorHandler(socket, `Invoice attachment Error: ${err}`)

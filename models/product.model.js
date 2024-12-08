@@ -1,3 +1,4 @@
+const { required } = require('joi')
 const mongoose = require('mongoose')
 const {Schema} = mongoose
 
@@ -19,6 +20,14 @@ const productSchema = new Schema({
     inStock: {
         type:Number,
         required:true,
+    },
+    stockAlert: {
+        type:Boolean,
+        required:true,
+    },
+    stockAlertLimit: {
+         type:Number,
+         required: true,
     },
     units: {
         type:String,

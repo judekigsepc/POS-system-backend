@@ -1,3 +1,4 @@
+require('dotenv').config()
 const path = require('path')
 const nodemailer = require('nodemailer')
 const Joi = require('joi')
@@ -28,18 +29,18 @@ const printInvoice = async (socket, invoiceName) => {
 
 const emailInvoice = async (socket,invoiceName,reEmail) => {
     try{
-        validateIfEmail(reEmail)
+        validateIfEmail(reEmail,'Email Error: Email Address Invalid or missing')
         validateIfString(invoiceName,'Email error: Invoice name not present or Invalid(Should be string)')
     }
     catch(err) {
-        return errorHandler(socket, err.message)
+        return errorHandler(socket,err.message )
     }
    
     const transporter = nodemailer.createTransport({
         service:'gmail',
         auth: {
             user:'kiggundujude120@gmail.com',
-            pass:'ejff xoev pbcb fkyd'
+            pass: process.env.GOOGLE_PASSKEY
         }
     })
 

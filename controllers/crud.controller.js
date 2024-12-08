@@ -2,8 +2,10 @@ const Transaction = require('../models/transaction.model');
 const User = require('../models/user.model');
 const Product = require('../models/product.model');
 const Busines = require('../models/business.model')
+const Config  = require('../models/config.model');
 
-const {fileUploader} = require('../utils/util')
+const {fileUploader} = require('../utils/util');
+
 
 // Centralized Error Handler
 const errorHandler = (err, model, res) => {
@@ -78,23 +80,27 @@ const handleCRUD = (model, operation) => {
     };
 };
 
-//Business routes
+//Configuration Controllers
+const createConfiguration = handleCRUD(Config, 'create')
+const updateConfiguration = handleCRUD(Config, 'update')
+
+//Business controllers
 const createBusinessDetails = handleCRUD(Busines, 'create')
 const updateBusinessDetails = handleCRUD(Busines, 'update')
 
-// Transaction Routes
+// Transaction controllers
 const getAllTransactions = handleCRUD(Transaction, 'getAll');
 const getSingleTransaction = handleCRUD(Transaction, 'getSingle');
 const createTransaction = handleCRUD(Transaction, 'create');
 const updateTransaction = handleCRUD(Transaction, 'update');
 const deleteTransaction = handleCRUD(Transaction, 'delete');
 
-// User Routes
+// User controllers
 const getAllUsers = handleCRUD(User, 'getAll');
 const getSingleUser = handleCRUD(User, 'getSingle');
 const deleteUser = handleCRUD(User, 'delete');
 
-// Product Routes
+// Product controllers
 const getAllProducts = handleCRUD(Product, 'getAll');
 const getSingleProduct = handleCRUD(Product, 'getSingle');
 const createProduct = handleCRUD(Product, 'create');
@@ -103,6 +109,9 @@ const deleteProduct = handleCRUD(Product, 'delete');
 
 // Exporting Controllers
 module.exports = {
+    createConfiguration,
+    updateConfiguration,
+
     createBusinessDetails,
     updateBusinessDetails,
 

@@ -4,6 +4,7 @@ const {timeSetter, errorHandler, messageHandler, successMessageHandler} = requir
 const { validateIfNumber, validateIfString, validateMultipleStrings, validateMultipleNumbers } = require("../utils/validationUtils")
 
 const { generateInvoice} = require("./docFunctions")
+const {clearCart, inventoryUpdate} = require('./cartInventoryManager')
 
 //Function to handle payment
 const paymentFunc = (socket,cart,payDetails,payment) => {
@@ -85,6 +86,8 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
       successMessageHandler(socket, 'Transaction proccessed successuly. Now generating invoice..')
 
       generateInvoice(socket, savedTransaction)
+      inventoryUpdate(socket, savedTransaction)
+      clearCart(socket, cart)
      //I should handle cart clearing logic here
      //Should also handle inventory updates
     }
