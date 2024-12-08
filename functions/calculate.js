@@ -65,7 +65,6 @@ const addFunc = async (socket,cart,data) => {
          const exisitingProduct = cart.cartProducts.some(prod => prod.name == product.name)
          if(exisitingProduct) {
             return errorHandler(socket, 'Product already in cart')
-            return cart.cartProducts.some(prod => prod.name == product.name).qty += 1
          }
          cart.cartProducts.push(product)
          cart.cartTotal = totalCalculator(cart.cartProducts)

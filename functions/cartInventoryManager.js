@@ -1,8 +1,8 @@
 const Config = require("../models/config.model")
 const Product = require("../models/product.model")
-const { messageHandler, successMessageHandler, errorHandler } = require("../utils/util")
+const { messageHandler, successMessageHandler} = require("../utils/util")
 
-
+//Function that clears up cart
 const clearCart = async (socket, cart) => {
       cart.cartProducts = []
       cart.cartGeneralDiscount = 0
@@ -12,31 +12,28 @@ const clearCart = async (socket, cart) => {
       successMessageHandler(socket,'cart cleared')
 }
 
+
+//Function that handles update of the inventory and stock managent incl. low stock alerts
 const inventoryUpdate = async (socket,savedTransaction) => {
     const {type,items} = savedTransaction
     try{
-        if(type === 'purchase') {
-
+        //Loop through item list
             for(const item of items) {
                const productToUpdate = await Product.findById(item.itemId)
+             //Passed to the stock handler function
                stockHandler(socket,productToUpdate,item)
             }
             
             successMessageHandler(socket,'Inventory Updated successfully')
-        }else if(type === 'refund') {
-            
-        }else {
-            errorHandler(socket, 'FATAL: INVALID TRANSACTION TYPE DETECTED PLEASE CONTACT DEVELOPER')
-        }
-
     }
     catch (err){
-        errorHandler(socket, `Inventory Update Error: ${err} `)
+        throw new Error (`Inventory Update Error: ${err} `)
     }
 
    
 }
 
+//Manages stock - stock alerts and the actual inventory update
 const stockHandler = async (socket, productToUpdate,item) => {
     try{
         if(!productToUpdate) {
@@ -64,7 +61,7 @@ const stockHandler = async (socket, productToUpdate,item) => {
         }
     }
     catch (err){
-       return errorHandler(socket, `Stock handling Error: ${err}`)
+       throw new Error(`Stock handling Error: ${err}`)
     }
     
 

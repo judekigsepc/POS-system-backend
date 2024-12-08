@@ -5,6 +5,7 @@ const { validateIfNumber, validateIfString, validateMultipleStrings, validateMul
 
 const { generateInvoice} = require("./docFunctions")
 const {clearCart, inventoryUpdate} = require('./cartInventoryManager')
+const {refundHandler} = require('./refundHandler')
 
 //Function to handle payment
 const paymentFunc = (socket,cart,payDetails,payment) => {
@@ -30,11 +31,11 @@ const paymentFunc = (socket,cart,payDetails,payment) => {
 const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
       const {type,notes,executor} =  data
       const {expenditure,payed,change} = payDetails
-      const {cartProducts,cartTotal,cartGeneralDiscount} = cart
   
       try{
         messageHandler(socket, 'task', 'Processing transaction')
         
+        //Validation of strings and numbers in payment details and the provided transaction data
         const error = 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid'
         validateMultipleStrings([type, notes, executor], error)
         validateMultipleNumbers([expenditure,payed,change],error )
@@ -45,10 +46,31 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
 
     try{
      
+      //Checking for vital info presence
       if(!type || !notes || !executor || !expenditure || !payed || !change) {
           return errorHandler(socket, 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid')
       }
-  
+    
+      //Handling transaction if refund(involves return of goods)
+      if(type === 'refund') {
+            const savedTransaction = await transactionSaver(socket,cart,payDetails,data)
+            return refundHandler(socket,savedTransaction)
+      }
+     
+      //Passing to the function that handles saving
+      transactionSaver(socket,cart,payDetails,data,'exec')
+    }
+    catch(err) {
+      return errorHandler(socket,err)
+    }
+   
+}
+
+const transactionSaver = async (socket, cart,payDetails,data,exec) => {
+      const {type,notes,executor} =  data
+      const {expenditure,payed,change} = payDetails
+      const {cartProducts,cartGeneralDiscount} = cart
+
       const itemsArray = []
   
       //Mapping cartProducts array to itemsArray for mongo db saving
@@ -80,21 +102,30 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
             type:type,
             notes:notes,
       }
-
-
+      
+      //Saving the transaction to the database
       const savedTransaction = await Transaction.create(transaction)  
-      successMessageHandler(socket, 'Transaction proccessed successuly. Now generating invoice..')
+      successMessageHandler(socket, 'Transaction proccessed successuly. Post processing..')
 
-      generateInvoice(socket, savedTransaction)
-      inventoryUpdate(socket, savedTransaction)
-      clearCart(socket, cart)
-     //I should handle cart clearing logic here
-     //Should also handle inventory updates
-    }
-    catch(err) {
-      return errorHandler(socket,err)
-    }
-   
+      //Passing to transaction post processing function
+     if(exec) {
+      return transactionPostProcesser(socket,cart,savedTransaction)
+     }
+     return savedTransaction
+}
+
+const transactionPostProcesser = async (socket,cart,savedTransaction) => {
+      try {
+            await Promise.all([
+                  inventoryUpdate(socket, savedTransaction),
+                  generateInvoice(socket, savedTransaction),
+                  clearCart(socket, cart)
+            ])
+      }
+      catch (err){
+           errorHandler(socket, err.message)
+      }
+      
 }
 
 module.exports = {

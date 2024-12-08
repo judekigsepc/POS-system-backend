@@ -8,7 +8,7 @@ const Business = require('../models/business.model')
 const User = require('../models/user.model')
 const Transaction = require('../models/transaction.model')
 
-const {errorHandler, successMessageHandler, messageHandler} = require('../utils/util')
+const {successMessageHandler, messageHandler} = require('../utils/util')
 
 const generateInvoice = async (socket, savedTransaction) => {
          fillInvoiceTemplate(socket,savedTransaction)
@@ -55,7 +55,7 @@ const fillInvoiceTemplate = async (socket,savedTransaction) => {
         generateInvoicePDF(socket,renderedHTML,_id)
     }
     catch(err) {
-         errorHandler(socket,`Invoice Error: ${err}`)
+         throw new Error(`Invoice Error: ${err}`)
     }
 }
 
@@ -83,7 +83,7 @@ const generateInvoicePDF = async (socket,renderedHTML,transactionId) => {
         messageHandler(socket, 'invoice-name', invoiceName)
     }
     catch(err) {
-        errorHandler(socket, `Invoice Error: ${err}`)
+        throw new Error(`Invoice Error: ${err}`)
     }
 
 }
@@ -94,7 +94,7 @@ const attachInvoiceToTransaction = async (socket, invoiceName,transactionId) => 
         await Transaction.findByIdAndUpdate(transactionId, {invoiceUrl: `${invoiceName}.pdf`},{new: true})
      }  
      catch(err) {
-         errorHandler(socket, `Invoice attachment Error: ${err}`)
+         throw new Error(`Invoice attachment Error: ${err}`)
      }  
 }
 
