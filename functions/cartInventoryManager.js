@@ -42,25 +42,25 @@ const stockHandler = async (socket, productToUpdate,item) => {
         if(!productToUpdate) {
            throw new Error('FATAL: INVALID PRODUCT DETECTED PLEASE CONTACT DEVELOPER')
         }
-        const {name ,inStock, stockAlert, stockAlertLimit} = productToUpdate
+        const {name ,inStock, stockAlert, stockAlertLimit,units} = productToUpdate
         const config = await Config.find({})
         const {globalStockAlertLimit, globalStockAlert} = config[0]
-        
-        if(globalStockAlert) {
-            if(stockAlert) {
-                if(inStock < stockAlertLimit || inStock < globalStockAlertLimit){
-                    messageHandler(socket, 'alert',`${name} is low in stock`)
-                }
-            }  
-        } 
-    
-        const newStock = inStock - Number(item.itemQty)
-        console.log(`${name} stock is ${newStock}`)
 
-        if(newStock <= 0) {
+      
+        if(inStock <= 0) {
             throw new Error(`${name} is OUT OF STOCK`)
         }else {
-            const updatedProd = await Product.findByIdAndUpdate(item.itemId, {inStock: newStock}, {new: true})
+            const newStock = inStock - Number(item.itemQty)
+            await Product.findByIdAndUpdate(item.itemId, {inStock: newStock}, {new: true})
+
+            if(globalStockAlert) {
+                if(stockAlert) {
+                    if(newStock < stockAlertLimit || inStock < globalStockAlertLimit){
+                        messageHandler(socket, 'alert', `${name} is low in stock with ${newStock} ${units}s left`)
+                    }
+                }  
+            } 
+        
         }
     }
     catch (err){

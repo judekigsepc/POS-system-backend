@@ -33,8 +33,12 @@ const addFunc = async (socket,cart,data) => {
               errorHandler(socket, 'Product Not found in database')
          }
 
-         const {name, price,taxes,discount,discountType,units,sku,_id} = wantedProduct
+         const {name, price,taxes,discount,discountType,units,sku,_id,inStock} = wantedProduct
 
+         console.log(inStock)
+         if(inStock <= 0) {
+            return errorHandler(socket, `${name} is OUT OF STOCK - If you think this is wrong please contact system admin`)
+         }
          let goneDiscount
          if(discountType === 'percent') {
             goneDiscount = discount /100 * price
