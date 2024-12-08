@@ -1,7 +1,7 @@
 const Transaction = require("../models/transaction.model")
 
 const {timeSetter, errorHandler, messageHandler, successMessageHandler} = require('../utils/util')
-const { validateIfNumber, validateIfString, validateMultipleStrings, validateMultipleNumbers } = require("../utils/validationUtils")
+const { validateIfNumber, validateMultipleStrings, validateMultipleNumbers } = require("../utils/validationUtils")
 
 const { generateInvoice} = require("./docFunctions")
 const {clearCart, inventoryUpdate} = require('./cartInventoryManager')

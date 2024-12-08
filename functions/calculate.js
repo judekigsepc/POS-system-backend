@@ -5,6 +5,7 @@ const {errorHandler} = require('../utils/util')
 const {paymentFunc, confirmPaymentFunc} = require('./payments')
 const {printInvoice, emailInvoice} = require('./invoiceActions')
 const { validateIfNumber, validateIfString, validateMultipleNumbers } = require('../utils/validationUtils')
+const { clearCart } = require('./cartInventoryManager')
 
 //Calculates the totals provided with the cart array
 const totalCalculator = (product) => {
@@ -211,6 +212,9 @@ const calculateTotals = async (socket) => {
       })
       socket.on('email-invoice',(invoiceName, reEmail) => {
             emailInvoice(socket, invoiceName, reEmail)
+      })
+      socket.on('cart-cleanup', () => {
+            clearCart(socket,cart)
       })
 }
 module.exports = {calculateTotals}
