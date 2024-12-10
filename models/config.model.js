@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose')
 const {Schema} = require('mongoose')
 
@@ -21,13 +20,12 @@ const configSchema = Schema({
     },
     emailText: {
         type: String,
-        required:true
+        emailText: 'Invoice email'
     },
     invoiceMessage: {
         type:String,
-        required:true
+        default:'Thank you for shopping with uss'
     },
-   
 })
 
 const Config = mongoose.model('Config', configSchema)

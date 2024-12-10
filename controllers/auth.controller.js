@@ -91,7 +91,7 @@ const userUpdate = async (req,res) => {
         if (!result)
             return res
                 .status(404)
-                .json({ message: `${model.modelName} record not found for update.` });
+                .json({ message: `User not found for update.` });
         res.status(200).json(result)
     }
     catch(err) {
@@ -102,8 +102,33 @@ const userUpdate = async (req,res) => {
     }
 }
 
+const deleteUser = async (req,res) => {
+    try{
+        const {id} = req.params
+        const deletedUser = await User.findByIdAndDelete(id)
+    
+        if(!deletedUser) {
+            throw new Error('User not found in database')
+        }
+        res.status(200).json({
+            message:'User deleted successfuly',
+            result:deletedUser
+        })
+    }
+    catch(err) {
+        return res.status(500)
+                   .json({
+                    error:err,
+                    details: err.message
+                   })
+    }
+}
+
+//USER DELETION LOGIC SHOULD BE HERE
+
 module.exports = {
     register,
     login,
-    userUpdate
+    userUpdate,
+    deleteUser
 }

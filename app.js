@@ -8,10 +8,12 @@ const http = require('http');
 const { initSocket,generalErrorHandler,notifyer } = require('./functions/rtFunctions'); // Import the socket module
 
 // Route imports
-const addRouter = require('./routes/add.route');
-const getRouter = require('./routes/get.route');
-const deleteRouter = require('./routes/delete.route');
-const updateRouter = require('./routes/update.route');
+const productRouter = require('./routes/product.route')
+const businessRouter = require('./routes/business.route')
+const configRouter = require('./routes/config.route')
+const userRouter = require('./routes/user.route')
+const transactionRouter = require('./routes/transaction.route')
+const categoryRouter = require('./routes/category.route')
 const authRouter = require('./routes/auth.route');
 
 
@@ -41,16 +43,18 @@ dbConnect()
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/api/public', express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.get('/', (req, res) => {
   res.send('POS SERVER IS UP AND RUNNING');
 });
-app.use('/api/add', addRouter);
-app.use('/api/get', getRouter);
-app.use('/api/delete', deleteRouter);
-app.use('/api/update', updateRouter);
+app.use('/api/products', productRouter);
+app.use('/api/config', configRouter);
+app.use('/api/business', businessRouter);
+app.use('/api/users', userRouter)
+app.use('/api/transactions', transactionRouter)
+app.use('/api/categories', categoryRouter)
 app.use('/api/auth', authRouter);
 
 // Start Server
