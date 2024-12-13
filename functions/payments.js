@@ -17,10 +17,8 @@ const paymentFunc = (socket,cart,payDetails,payment) => {
         }
 
     const {cartTotal} = cart
-    const change = Number(payment) - cartTotal
-    if (change < 0) {
-          return errorHandler(socket, 'Payment error: payed amount is not enough to cover expenditure')
-    }
+    let change = Number(payment) - cartTotal
+   
     payDetails.expenditure = cartTotal
     payDetails.payed = Number(payment)
     payDetails.change = change
@@ -39,6 +37,10 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
         const error = 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid'
         validateMultipleStrings([type, notes, executor], error)
         validateMultipleNumbers([expenditure,payed,change],error )
+
+        if(change < 0) {
+            return errorHandler(socket, `Paid amount was not enough to cover expenditure`)
+        }
       }
       catch(err) {
             return errorHandler(socket, `Transaction Error: ${err.message}`)
@@ -109,17 +111,17 @@ const transactionSaver = async (socket, cart,payDetails,data,exec) => {
 
       //Passing to transaction post processing function
      if(exec) {
-      return transactionPostProcesser(socket,cart,savedTransaction)
+      return transactionPostProcesser(socket,cart,savedTransaction,payDetails)
      }
      return savedTransaction
 }
 
-const transactionPostProcesser = async (socket,cart,savedTransaction) => {
+const transactionPostProcesser = async (socket,cart,savedTransaction,payDetails) => {
       try {
             await Promise.all([
                   inventoryUpdate(socket, savedTransaction),
                   generateInvoice(socket, savedTransaction),
-                  clearCart(socket, cart)
+                  clearCart(socket, cart,payDetails)
             ])
       }
       catch (err){

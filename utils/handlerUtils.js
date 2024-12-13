@@ -1,3 +1,4 @@
+const fs = require('fs')
 
 //ERROR HANDLER FOR CRUD OPERATIONS
 const crudErrorHanlder = (msg,err,res) => {
@@ -22,8 +23,20 @@ const resultSender = (message,result,res) => {
     })
 }
 
+
+const deleteFile =  (filePath) => {
+    fs.unlink(filePath, (err) => {
+        if(err) {
+            console.log(err)
+        }else{
+            console.log('File deleted successfuly')
+        }
+    })
+}
+
 module.exports = {
     crudErrorHanlder,
     availChecker,
-    resultSender
+    resultSender,
+    deleteFile
 }

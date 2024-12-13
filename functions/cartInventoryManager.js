@@ -3,12 +3,18 @@ const Product = require("../models/product.model")
 const { messageHandler, successMessageHandler} = require("../utils/util")
 
 //Function that clears up cart
-const clearCart = async (socket, cart) => {
+const clearCart = async (socket, cart, payDetails) => {
+      payDetails.expenditure = 0
+      payDetails.payed = 0
+      payDetails.change = 0
+
       cart.cartProducts = []
       cart.cartGeneralDiscount = 0
       cart.cartTotal = 0
 
       socket.emit('cart-cleanup')
+      socket.emit('pay_cleanup', payDetails)
+      
       successMessageHandler(socket,'cart cleared')
 }
 

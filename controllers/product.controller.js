@@ -1,6 +1,7 @@
 const Product = require("../models/product.model")
-const { resultSender, crudErrorHanlder, availChecker } = require("../utils/handlerUtils")
+const { resultSender, crudErrorHanlder, availChecker, deleteFile } = require("../utils/handlerUtils")
 const { fileUploader } = require("../utils/util")
+
 
 
 //Function to retrieve all products from the database
@@ -69,6 +70,18 @@ const updateProduct = async (req,res) => {
           const {id} = req.params
           const imgPath = await fileUploader(req,res)
           req.body.imgUrl = imgPath
+
+          const productToUpdate = await Product.findById(id)
+          if(!productToUpdate) {
+            deleteFile(imgPath)
+
+            res.status(400).json({
+                error:'Update Error',
+                details:'Product not found for deletion'
+            })
+          }
+          deleteFile(productToUpdate.imgUrl)
+
           
           const result = await Product.findByIdAndUpdate(id, req.body, {new:true})
           availChecker(result, 'Product not found for update')

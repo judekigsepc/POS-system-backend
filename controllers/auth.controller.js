@@ -2,24 +2,30 @@ const User = require('../models/user.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {fileUploader} = require('../utils/util')
+const {deleteFile} = require('../utils/handlerUtils')
+const fs = require('fs')
 
 //Function to register user into the system db
 const register = async (req,res) => {
     try {
-        const {names,password} = req.body
+        const imagePath = await fileUploader(req,res)
+        req.body.imgUrl = imagePath 
 
-        const existingUser = await User.findOne({names})
+        const {names,password} = req.body
+        console.log(req.body)
+
+        const existingUser = await User.findOne({names:names.toUpperCase()})
+        console.log(existingUser)
 
         if(existingUser){
+            deleteFile(imagePath)
             return res.status(400).json({message:"User already exists"})
         }
 
         const hashedPassword = await bcrypt.hash(password,10)
         req.body.password = hashedPassword
 
-        const imagePath = await fileUploader(req,res)
-        req.body.imgUrl = imagePath 
-
+       
         const result = await User.create(req.body)
         return res.status(200)
             .json({
@@ -75,16 +81,28 @@ const login = async (req,res) => {
 //Function to enable update of user details
 const userUpdate = async (req,res) => {
     try {
+        
+        const uptImageUrl = await fileUploader(req,res)
+        req.body.imgUrl = uptImageUrl
+
         const {password} = req.body
         const {id} = req.params 
+
+        const userToUpdate = await User.findById(id)
+        if(!userToUpdate) {
+            res.status(400).json({
+               error: 'User update failed',
+               details:'User not found in database'
+            })
+            deleteFile(uptImageUrl)
+        }
+
+        deleteFile(userToUpdate.imgUrl)
         
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10)
             req.body.password = hashedPassword
         }
-
-        const uptImageUrl = await fileUploader(req,res)
-        req.body.imgUrl = uptImageUrl
       
         result = await User.findByIdAndUpdate(id, req.body, { new: true });
 
@@ -110,6 +128,9 @@ const deleteUser = async (req,res) => {
         if(!deletedUser) {
             throw new Error('User not found in database')
         }
+        
+        deleteFile(deletedUser.imgUrl)
+
         res.status(200).json({
             message:'User deleted successfuly',
             result:deletedUser

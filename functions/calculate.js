@@ -1,7 +1,7 @@
 const Product = require('../models/product.model')
 const Transaction = require('../models/transaction.model')
 
-const {errorHandler} = require('../utils/util')
+const {errorHandler, successMessageHandler} = require('../utils/util')
 const {paymentFunc, confirmPaymentFunc} = require('./payments')
 const {printInvoice, emailInvoice} = require('./invoiceActions')
 const { validateIfNumber, validateIfString, validateMultipleNumbers } = require('../utils/validationUtils')
@@ -36,7 +36,6 @@ const addFunc = async (socket,cart,data) => {
 
          const {name, price,taxes,discount,discountType,units,sku,_id,inStock} = wantedProduct
 
-         console.log(inStock)
          if(inStock <= 0) {
             return errorHandler(socket, `${name} is OUT OF STOCK - If you think this is wrong please contact system admin`)
          }
@@ -63,20 +62,25 @@ const addFunc = async (socket,cart,data) => {
                units:units,
          }
 
-         const exisitingProduct = cart.cartProducts.some(prod => prod.name == product.name)
-         if(exisitingProduct) {
-            return errorHandler(socket, 'Product already in cart')
-         }
+        
+         const existingProductIndex = cart.cartProducts.findIndex(prod => prod.name === product.name);
+
+          if (existingProductIndex !== -1) {
+               const data = { prodIndex: existingProductIndex, qty: cart.cartProducts[existingProductIndex].qty + 1 };
+               return updatorFunc(socket, cart, data);
+            }
+            
          cart.cartProducts.push(product)
          cart.cartTotal = totalCalculator(cart.cartProducts)
          
          const {cartTotal} = cart
          socket.emit('result',{product, cartTotal})
+         successMessageHandler(socket, `${product.name} Added to cart`)
 }
 
 const updatorFunc = (socket,cart,data) => {
       //Destructure product index and index from the request
-      const {prodIndex, qty} = data 
+      let {prodIndex, qty} = data 
 
       //Check for presence and validity of the data types
       try{
@@ -89,6 +93,9 @@ const updatorFunc = (socket,cart,data) => {
       // if( !prodIndex || !qty || typeof(prodIndex) !== 'number' || typeof(qty) !== 'number') {
       //       return errorHandler(socket, 'Invalid data or data types in cart updater. Values should be numbers')
       // }
+      if(qty < 1 ) {
+            qty = 1
+      }
       if (cart.cartProducts.length == 0) {
             return errorHandler(socket, 'Your cart is empty. There is nothing to update.')
       }
@@ -99,8 +106,17 @@ const updatorFunc = (socket,cart,data) => {
            return errorHandler(socket, 'Product not in array')
       }
 
-      //Calculate sub total
-      const subTotal = productToUpdate.price * qty;
+      let subTotal
+
+      const {discount, discountType} = productToUpdate
+      if(discountType === 'percent') {
+           const discountValue =  Number(discount/100) * Number(qty * productToUpdate.price)
+           subTotal = Number(qty * productToUpdate.price) - discountValue
+      }else if (discountType === 'flat') {
+           subTotal = Number(qty * productToUpdate.price) - discount
+      }else{
+            errorHandler(socket,'FATAL ERROR. PLEASE CONTACT THE SYSTEM ADMIN')
+      }
 
       //Update of product alone
       [productToUpdate.qty, productToUpdate.subTotal] = [qty,subTotal]
@@ -137,6 +153,7 @@ const deleteFunc = (socket,cart,prodIndex) => {
       const {cartTotal} = cart
       //The command
       socket.emit('delete_command',{prodIndex, cartTotal})
+      successMessageHandler(socket, `${productToDelete.name} deleted successfuly`)
 }
 
 //Cart discounting function
@@ -190,16 +207,20 @@ const calculateTotals = async (socket) => {
       }
 
       socket.on('add_to_cart', async (data) => {
-              addFunc(socket,cart,data)
+              await addFunc(socket,cart,data)
+              paymentFunc(socket,cart,payDetails,payDetails.payed)
       })
       socket.on('update_qty', (data) => {
             updatorFunc(socket,cart,data)
+            paymentFunc(socket,cart,payDetails,payDetails.payed)
       })
       socket.on('delete_from_cart', (prodIndex) => {
              deleteFunc(socket,cart,prodIndex)
+             paymentFunc(socket, cart, payDetails, payDetails.payed)
       })
       socket.on('discount_cart', (data) => {
             cartDiscounter(socket,cart,data)
+            paymentFunc(socket,cart,payDetails,amount)
       }) 
       socket.on('payment', (amount) => {
             paymentFunc(socket,cart,payDetails,amount)
@@ -214,7 +235,7 @@ const calculateTotals = async (socket) => {
             emailInvoice(socket, invoiceName, reEmail)
       })
       socket.on('cart-cleanup', () => {
-            clearCart(socket,cart)
+            clearCart(socket,cart, payDetails)
       })
 }
 module.exports = {calculateTotals}
