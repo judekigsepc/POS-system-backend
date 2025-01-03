@@ -77,12 +77,19 @@ const successMessageHandler = (socket,msg) => {
     return socket.emit('socket-success-message', msg)
 }
 
+//Event message emmiter
+const socketEventEmmiter = (socket,msg) => {
+    return socket.emit('socket-event-message',msg)
+}
+
 module.exports = {
     timeSetter,
     fileUploader,
     authenticateToken,
     adminOnly,
+    
     errorHandler,
     messageHandler,
-    successMessageHandler
+    successMessageHandler,
+    socketEventEmmiter
 }

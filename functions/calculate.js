@@ -79,55 +79,77 @@ const addFunc = async (socket,cart,data) => {
 }
 
 const updatorFunc = (socket,cart,data) => {
-      //Destructure product index and index from the request
-      let {prodIndex, qty} = data 
-
-      //Check for presence and validity of the data types
       try{
-            validateMultipleNumbers([prodIndex, qty], 'Product index or quamtity may not be present or is Invalid(Should be string)')
-      }
-      catch(err) {
-           return errorHandler(socket, `Product Update Error: ${err.message}`)
-      }
+            let {prodIndex, qty} = data 
 
-      // if( !prodIndex || !qty || typeof(prodIndex) !== 'number' || typeof(qty) !== 'number') {
-      //       return errorHandler(socket, 'Invalid data or data types in cart updater. Values should be numbers')
-      // }
-      if(qty < 1 ) {
-            qty = 1
-      }
-      if (cart.cartProducts.length == 0) {
-            return errorHandler(socket, 'Your cart is empty. There is nothing to update.')
-      }
-
-      //This is a checker to check for product presence in cart using index
-      const productToUpdate = cart.cartProducts[prodIndex]
-      if( !productToUpdate) {
-           return errorHandler(socket, 'Product not in array')
-      }
-
-      let subTotal
-
-      const {discount, discountType} = productToUpdate
-      if(discountType === 'percent') {
-           const discountValue =  Number(discount/100) * Number(qty * productToUpdate.price)
-           subTotal = Number(qty * productToUpdate.price) - discountValue
-      }else if (discountType === 'flat') {
-           subTotal = Number(qty * productToUpdate.price) - discount
-      }else{
-            errorHandler(socket,'FATAL ERROR. PLEASE CONTACT THE SYSTEM ADMIN')
-      }
-
-      //Update of product alone
-      [productToUpdate.qty, productToUpdate.subTotal] = [qty,subTotal]
-
-      //Update of product in cart
-      cart.cartProducts[prodIndex] = productToUpdate
-      cart.cartTotal = totalCalculator(cart.cartProducts)
-
-      const {cartTotal} = cart
+            //Check for presence and validity of the data types
+            try{
+                  validateMultipleNumbers([prodIndex, qty], 'Product index or quamtity may not be present or is Invalid(Should be string)')
+            }
+            catch(err) {
+                 return errorHandler(socket, `Product Update Error: ${err.message}`)
+            }
       
-      socket.emit('upt_result',{prodIndex, productToUpdate,cartTotal})
+            // if( !prodIndex || !qty || typeof(prodIndex) !== 'number' || typeof(qty) !== 'number') {
+            //       return errorHandler(socket, 'Invalid data or data types in cart updater. Values should be numbers')
+            // }
+            if(qty < 1 ) {
+                  qty = 1
+            }
+            if (cart.cartProducts.length == 0) {
+                  return errorHandler(socket, 'Your cart is empty. There is nothing to update.')
+            }
+      
+            //This is a checker to check for product presence in cart using index
+            const productToUpdate = cart.cartProducts[prodIndex]
+            if( !productToUpdate) {
+                 return errorHandler(socket, 'Product not in array')
+            }
+           
+            const validateAgainstProductStock = async (productToUpdate) => {
+                  try{
+                        const {inStock} = await Product.findById(productToUpdate.id)
+                        if(qty > inStock) {
+                             const difference = qty - inStock
+                             throw new Error(`Quantity more than available in stock by ${difference}`)
+                        }else {
+                              successMessageHandler(socket,'')
+                        }
+                  }
+                  catch(err) {
+                        return errorHandler(socket, err.message)
+                  }
+                  
+            }
+            validateAgainstProductStock(productToUpdate)
+      
+            let subTotal
+            const {discount, discountType} = productToUpdate
+            if(discountType === 'percent') {
+                 const discountValue =  Number(discount/100) * Number(qty * productToUpdate.price)
+                 subTotal = Number(qty * productToUpdate.price) - discountValue
+            }else if (discountType === 'flat') {
+                 subTotal = Number(qty * productToUpdate.price) - discount
+            }else{
+                  errorHandler(socket,'FATAL ERROR. PLEASE CONTACT THE SYSTEM ADMIN')
+            }
+      
+            //Update of product alone
+            [productToUpdate.qty, productToUpdate.subTotal] = [qty,subTotal]
+      
+            //Update of product in cart
+            cart.cartProducts[prodIndex] = productToUpdate
+            cart.cartTotal = totalCalculator(cart.cartProducts)
+      
+            const {cartTotal} = cart
+            
+            socket.emit('upt_result',{prodIndex, productToUpdate,cartTotal})
+
+      }catch(err) {
+            return errorHandler(socket,err)
+      }
+      //Destructure product index and index from the request
+     
 }
 
 //Function to delete from cart
@@ -153,7 +175,7 @@ const deleteFunc = (socket,cart,prodIndex) => {
       const {cartTotal} = cart
       //The command
       socket.emit('delete_command',{prodIndex, cartTotal})
-      successMessageHandler(socket, `${productToDelete.name} deleted successfuly`)
+      successMessageHandler(socket, `${productToDelete.name} removed from cart`)
 }
 
 //Cart discounting function
@@ -220,7 +242,7 @@ const calculateTotals = async (socket) => {
       })
       socket.on('discount_cart', (data) => {
             cartDiscounter(socket,cart,data)
-            paymentFunc(socket,cart,payDetails,amount)
+            paymentFunc(socket,cart, payDetails,payDetails.payed)
       }) 
       socket.on('payment', (amount) => {
             paymentFunc(socket,cart,payDetails,amount)
@@ -236,6 +258,9 @@ const calculateTotals = async (socket) => {
       })
       socket.on('cart-cleanup', () => {
             clearCart(socket,cart, payDetails)
+      })
+      socket.on('hold-sale', () => {
+            
       })
 }
 module.exports = {calculateTotals}

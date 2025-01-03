@@ -1,6 +1,6 @@
 const Config = require("../models/config.model")
 const Product = require("../models/product.model")
-const { messageHandler, successMessageHandler} = require("../utils/util")
+const { messageHandler, successMessageHandler, errorHandler} = require("../utils/util")
 
 //Function that clears up cart
 const clearCart = async (socket, cart, payDetails) => {
@@ -21,11 +21,12 @@ const clearCart = async (socket, cart, payDetails) => {
 
 //Function that handles update of the inventory and stock managent incl. low stock alerts
 const inventoryUpdate = async (socket,savedTransaction) => {
-    const {type,items} = savedTransaction
+    const {items} = savedTransaction
     try{
         //Loop through item list
             for(const item of items) {
                const productToUpdate = await Product.findById(item.itemId)
+
              //Passed to the stock handler function
                stockHandler(socket,productToUpdate,item)
             }
@@ -39,6 +40,13 @@ const inventoryUpdate = async (socket,savedTransaction) => {
    
 }
 
+const inventoryManagementHandlers = {
+        checkProduct: (productToUpdate) => handleProductValidity(productToUpdate),
+        checkStock: (inStock) => handleProductStockCheck(inStock),
+        updateStock: (productToUpdate) => handleProductStockUpdate(productToUpdate)
+
+}
+
 //Manages stock - stock alerts and the actual inventory update
 const stockHandler = async (socket, productToUpdate,item) => {
     try{
@@ -49,11 +57,15 @@ const stockHandler = async (socket, productToUpdate,item) => {
         const config = await Config.find({})
         const {globalStockAlertLimit, globalStockAlert} = config[0]
 
-      
-        if(inStock <= 0) {
+
+        if(inStock < 1) {
             throw new Error(`${name} is OUT OF STOCK`)
         }else {
             const newStock = inStock - Number(item.itemQty)
+
+            if(newStock < 0) {
+                 throw new Error(`Transaction failed: Verify quantity values of ${item.name} against stock`)
+            }
             await Product.findByIdAndUpdate(item.itemId, {inStock: newStock}, {new: true})
 
             if(globalStockAlert) {

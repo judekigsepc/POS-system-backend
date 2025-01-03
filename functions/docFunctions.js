@@ -8,7 +8,7 @@ const Business = require('../models/business.model')
 const User = require('../models/user.model')
 const Transaction = require('../models/transaction.model')
 
-const {successMessageHandler, messageHandler} = require('../utils/util')
+const {successMessageHandler, messageHandler, socketEventEmmiter} = require('../utils/util')
 
 const generateInvoice = async (socket, savedTransaction) => {
          fillInvoiceTemplate(socket,savedTransaction)
@@ -79,8 +79,9 @@ const generateInvoicePDF = async (socket,renderedHTML,transactionId) => {
         await browser.close()
 
         attachInvoiceToTransaction(socket,invoiceName,transactionId)
-        successMessageHandler(socket,`Invoice PDF generated and saved successfuly`)
+        successMessageHandler(socket,`Invoice PDF generated and saved successfuly. Ready for printing or emailing`)
         messageHandler(socket, 'invoice-name', invoiceName)
+        socketEventEmmiter(socket, 'invoice-ready')
     }
     catch(err) {
         throw new Error(`Invoice Error: ${err}`)

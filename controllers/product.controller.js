@@ -1,6 +1,6 @@
 const Product = require("../models/product.model")
 const { resultSender, crudErrorHanlder, availChecker, deleteFile } = require("../utils/handlerUtils")
-const { fileUploader } = require("../utils/util")
+const { fileUploader, successMessageHandler } = require("../utils/util")
 
 
 
@@ -68,9 +68,15 @@ const deleteProduct = async (req,res) => {
 const updateProduct = async (req,res) => {
        try {
           const {id} = req.params
-          const imgPath = await fileUploader(req,res)
-          req.body.imgUrl = imgPath
 
+          //Get image path from fileUploader
+          const imgPath = await fileUploader(req,res)
+
+          //Image path validation to check if its really available to prevent damage to the current imgUrl
+          if(imgPath) {
+            req.body.imgUrl = imgPath
+          }
+         
           const productToUpdate = await Product.findById(id)
           if(!productToUpdate) {
             deleteFile(imgPath)

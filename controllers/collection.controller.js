@@ -1,7 +1,7 @@
 const Category = require('../models/category.model')
 const { crudErrorHanlder, availChecker, resultSender } = require('../utils/handlerUtils')
 
-const getAllCategories = async (req,res) => {
+const getAllCollections = async (req,res) => {
     try{
          const categories = await Category.find({})
          resultSender('Categories retrieved successfuly',categories,res)
@@ -11,7 +11,7 @@ const getAllCategories = async (req,res) => {
 }
 
 //Function to retrieve a single product from the database
-const getSingleCategory = async (req,res) => {
+const getSingleCollection = async (req,res) => {
     try{
         const {id} = req.params
         const category = await Category.findById(id)
@@ -26,7 +26,7 @@ const getSingleCategory = async (req,res) => {
 }
 
 //Function to add a  product to the database
-const createCategory = async (req,res) => {
+const createCollection = async (req,res) => {
     try {
         const savedCategory = await Category.create(req.body)
 
@@ -41,7 +41,7 @@ const createCategory = async (req,res) => {
 }
 
 //Function to delete a product from the database
-const deleteCategory = async (req,res) => {
+const deleteCollection = async (req,res) => {
      try{
           const {id} = req.params
           const result = await Category.findByIdAndDelete(id)
@@ -59,7 +59,7 @@ const deleteCategory = async (req,res) => {
 }
 
 //Function to update a product in the database
-const updateCategory = async (req,res) => {
+const updateCollection = async (req,res) => {
        try {
           const {id} = req.params
           
@@ -77,9 +77,9 @@ const updateCategory = async (req,res) => {
 }
 
 module.exports = {
-    createCategory,
-    deleteCategory,
-    updateCategory,
-    getAllCategories,
-    getSingleCategory
+    createCollection,
+    deleteCollection,
+    updateCollection,
+    getAllCollections,
+    getSingleCollection
 }

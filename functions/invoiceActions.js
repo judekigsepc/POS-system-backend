@@ -1,7 +1,6 @@
 require('dotenv').config()
 const path = require('path')
 const nodemailer = require('nodemailer')
-const Joi = require('joi')
 
 const { print } = require('pdf-to-printer')
 const { messageHandler, successMessageHandler, errorHandler } = require('../utils/util')

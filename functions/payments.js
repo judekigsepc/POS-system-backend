@@ -38,8 +38,9 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
         validateMultipleStrings([type, notes, executor], error)
         validateMultipleNumbers([expenditure,payed,change],error )
 
+        //Checking to if the money paid is enough to cover the expenditure
         if(change < 0) {
-            return errorHandler(socket, `Paid amount was not enough to cover expenditure`)
+            return errorHandler(socket, `Paid amount is not enough to cover expenditure`)
         }
       }
       catch(err) {
@@ -48,8 +49,8 @@ const confirmPaymentFunc = async (socket,cart,payDetails,data) => {
 
     try{
      
-      //Checking for vital info presence
-      if(!type || !notes || !executor || !expenditure || !payed || !change) {
+      // //Checking for vital info presence
+      if(!type || !notes || !executor || !expenditure || !payed) {
           return errorHandler(socket, 'Transactuion Error: Payment Confirmation error: Payment details or confirmation info may be missing or invalid')
       }
     

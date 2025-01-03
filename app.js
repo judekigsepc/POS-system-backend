@@ -40,7 +40,7 @@ const dbConnect = async () =>{
 dbConnect()
 
 // Middleware
-app.use(cors());
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/public', express.static(path.join(__dirname, 'public')));

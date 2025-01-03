@@ -1,7 +1,7 @@
-const { required } = require('joi')
+
 const mongoose = require('mongoose')
 
-const categorySchema = mongoose.Schema({
+const collectionSchema = mongoose.Schema({
     name: {
         type:String,
         unique:true,
@@ -9,13 +9,12 @@ const categorySchema = mongoose.Schema({
     },
     items: {
         type:[mongoose.Schema.Types.ObjectId],
-        required:true,
     },
     color: {
         type:String,
         default:'black'
     },
-    notes: {
+    description: {
         type:String,
         default:'This is a category'
     },
@@ -26,9 +25,18 @@ const categorySchema = mongoose.Schema({
     stockAlertLimit: {
         type:Number,
         default:10
-    }
+    },
+    discount: {
+        type:Number,
+        default:0,
+    },
+    discountType: {
+        type:String,
+        enum:['percent','flat'],
+        default:'percent'
+    },
 },{timestamps: true})
 
-const Category = mongoose.model('Category',categorySchema)
+const Collection = mongoose.model('Category',collectionSchema)
 
-module.exports = Category
+module.exports = Collection
