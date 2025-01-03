@@ -1,10 +1,10 @@
-const Category = require('../models/category.model')
+const Collection = require('../models/collection.model')
 const { crudErrorHanlder, availChecker, resultSender } = require('../utils/handlerUtils')
 
 const getAllCollections = async (req,res) => {
     try{
-         const categories = await Category.find({})
-         resultSender('Categories retrieved successfuly',categories,res)
+         const collections = await Collection.find({})
+         resultSender('Collections retrieved successfuly',collections,res)
     }catch(err) {
          crudErrorHanlder('Retrieving categories failed',err,res)
     }
@@ -14,25 +14,25 @@ const getAllCollections = async (req,res) => {
 const getSingleCollection = async (req,res) => {
     try{
         const {id} = req.params
-        const category = await Category.findById(id)
+        const Collection = await Collection.findById(id)
 
-        availChecker(category,'Category not found')
+        availChecker(Collection,'Collection not found')
 
-        resultSender('Requested category retrieved successfuly',category,res)
+        resultSender('Requested Collection retrieved successfuly',Collection,res)
     }
     catch(err) {
-        crudErrorHanlder('Retrieving category failed:',err,res)
+        crudErrorHanlder('Retrieving Collection failed:',err,res)
     }   
 }
 
 //Function to add a  product to the database
 const createCollection = async (req,res) => {
     try {
-        const savedCategory = await Category.create(req.body)
+        const savedCollection = await Collection.create(req.body)
 
         res.status(200).json({
-            message:'Category created successfuly',
-            category: savedCategory
+            message:'Collection created successfuly',
+            Collection: savedCollection
         }) 
     }catch(err){
         return crudErrorHanlder('Product addition falied',err,res)
@@ -44,17 +44,17 @@ const createCollection = async (req,res) => {
 const deleteCollection = async (req,res) => {
      try{
           const {id} = req.params
-          const result = await Category.findByIdAndDelete(id)
+          const result = await Collection.findByIdAndDelete(id)
         
-          availChecker(result,'Category not available for deletion')
+          availChecker(result,'Collection not available for deletion')
 
           res.status(200).json({
-            message:'Category deleted successfuly'
+            message:'Collection deleted successfuly'
           })
 
      }
      catch(err) {
-       return crudErrorHanlder('Category deletion failed',err,res)
+       return crudErrorHanlder('Collection deletion failed',err,res)
      }
 }
 
@@ -63,16 +63,16 @@ const updateCollection = async (req,res) => {
        try {
           const {id} = req.params
           
-          const result = await Category.findByIdAndUpdate(id, req.body, {new:true})
-          availChecker(result, 'Category not found for update')
+          const result = await Collection.findByIdAndUpdate(id, req.body, {new:true})
+          availChecker(result, 'Collection not found for update')
 
           res.status(200).json({
-            message:'Category Updated successfuly',
+            message:'Collection Updated successfuly',
             product:result
           })
        }
        catch(err){
-         return crudErrorHanlder('Category update failed',err,res)
+         return crudErrorHanlder('Collection update failed',err,res)
        }
 }
 

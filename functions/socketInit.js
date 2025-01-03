@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const { calculateTotals } = require('./calculate')
+const  cartSocketListeners  = require('./cartSocketListeners')
 
 let io;
 
@@ -16,7 +16,7 @@ function initSocket(server) {
   io.on('connection', (socket) => {
    console.log('A user connected', socket.id)
 
-    calculateTotals(socket)
+    cartSocketListeners(socket)
 
     socket.on('disconnect', () => {
       console.log('A user disconnected:', socket.id);

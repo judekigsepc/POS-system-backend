@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
-const { initSocket,generalErrorHandler,notifyer } = require('./functions/rtFunctions'); // Import the socket module
+const { initSocket,generalErrorHandler,notifyer } = require('./functions/socketInit'); // Import the socket module
 
 // Route imports
 const productRouter = require('./routes/product.route')
@@ -13,7 +13,8 @@ const businessRouter = require('./routes/business.route')
 const configRouter = require('./routes/config.route')
 const userRouter = require('./routes/user.route')
 const transactionRouter = require('./routes/transaction.route')
-const categoryRouter = require('./routes/category.route')
+const collectionRouter = require('./routes/collection.route')
+const holdRouter = require('./routes/saleHold.route')
 const authRouter = require('./routes/auth.route');
 
 
@@ -54,7 +55,8 @@ app.use('/api/config', configRouter);
 app.use('/api/business', businessRouter);
 app.use('/api/users', userRouter)
 app.use('/api/transactions', transactionRouter)
-app.use('/api/categories', categoryRouter)
+app.use('/api/collections', collectionRouter)
+app.use('/api/holds',holdRouter)
 app.use('/api/auth', authRouter);
 
 // Start Server

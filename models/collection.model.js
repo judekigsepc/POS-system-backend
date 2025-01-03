@@ -1,4 +1,5 @@
 
+const { required } = require('joi')
 const mongoose = require('mongoose')
 
 const collectionSchema = mongoose.Schema({
@@ -7,8 +8,13 @@ const collectionSchema = mongoose.Schema({
         unique:true,
         required:true,
     },
+    collectionCode: {
+        type:String,
+        required:true
+    },
     items: {
         type:[mongoose.Schema.Types.ObjectId],
+        ref:'Product'
     },
     color: {
         type:String,

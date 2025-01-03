@@ -3,7 +3,7 @@ const Transaction = require("../models/transaction.model")
 const {timeSetter, errorHandler, messageHandler, successMessageHandler} = require('../utils/util')
 const { validateIfNumber, validateMultipleStrings, validateMultipleNumbers } = require("../utils/validationUtils")
 
-const { generateInvoice} = require("./docFunctions")
+const { generateInvoice} = require("./docActions")
 const {clearCart, inventoryUpdate} = require('./cartInventoryManager')
 const {refundHandler} = require('./refundHandler')
 
