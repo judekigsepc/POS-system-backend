@@ -23,15 +23,15 @@ const productSchema = new Schema({
     },
     stockAlert: {
         type:Boolean,
-        required:true,
+        default:true,
     },
     stockAlertLimit: {
          type:Number,
-         required: true,
+         default:10,
     },
     units: {
         type:String,
-        default:'unit',
+        default:'item',
     },
     sku: {
         type:String,
@@ -48,8 +48,8 @@ const productSchema = new Schema({
     },
     discountType: {
         type:String,
-        required:true,
-        enum:['flat','percent']
+        enum:['flat','percent'],
+        default:'percent'
     },
     taxes: {
         type:Number,

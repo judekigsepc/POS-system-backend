@@ -1,5 +1,3 @@
-
-const { required } = require('joi')
 const mongoose = require('mongoose')
 
 const collectionSchema = mongoose.Schema({
@@ -32,6 +30,10 @@ const collectionSchema = mongoose.Schema({
         type:Number,
         default:10
     },
+    priceValue: {
+        type:Number,
+        default:0
+    },
     discount: {
         type:Number,
         default:0,
@@ -41,6 +43,10 @@ const collectionSchema = mongoose.Schema({
         enum:['percent','flat'],
         default:'percent'
     },
+    saleable: {
+        type:Boolean,
+        default:false
+    }
 },{timestamps: true})
 
 const Collection = mongoose.model('Category',collectionSchema)

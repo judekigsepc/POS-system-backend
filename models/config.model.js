@@ -12,7 +12,7 @@ const configSchema = Schema({
     },
     globalStockAlertLimit: {
         type:Number,
-        required:true
+        default:10
     },
     debugMode: {
         type:Boolean,

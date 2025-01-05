@@ -14,11 +14,11 @@ const getAllCollections = async (req,res) => {
 const getSingleCollection = async (req,res) => {
     try{
         const {id} = req.params
-        const Collection = await Collection.findById(id)
+        const collection = await Collection.findById(id)
 
-        availChecker(Collection,'Collection not found')
+        availChecker(collection,'Collection not found')
 
-        resultSender('Requested Collection retrieved successfuly',Collection,res)
+        resultSender('Requested Collection retrieved successfuly',collection,res)
     }
     catch(err) {
         crudErrorHanlder('Retrieving Collection failed:',err,res)
@@ -35,7 +35,7 @@ const createCollection = async (req,res) => {
             Collection: savedCollection
         }) 
     }catch(err){
-        return crudErrorHanlder('Product addition falied',err,res)
+        return crudErrorHanlder('Collection creation failed',err,res)
     }
 
 }

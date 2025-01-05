@@ -4,6 +4,7 @@ const {printInvoice, emailInvoice} = require('./invoiceActions')
 const { clearCart } = require('./cartInventoryManager')
 const { holdSale,resumeHeldSale } = require('./saleHoldActions')
 const { addToCart,updateInCart,deleteInCart,discountCart } = require('./cartActions')
+const {calculateCollection} = require('./collectionActions')
 
 
 const cartSocketListeners = async (socket) => {
@@ -22,8 +23,8 @@ const cartSocketListeners = async (socket) => {
               await addToCart(socket,cart,data)
               paymentFunc(socket,cart,payDetails,payDetails.payed)
       })
-      socket.on('update_qty', (data) => {
-            updateInCart(socket,cart,data)
+      socket.on('update_qty', async (data) => {
+            await updateInCart(socket,cart,data)
             paymentFunc(socket,cart,payDetails,payDetails.payed)
       })
       socket.on('delete_from_cart', (prodIndex) => {
@@ -55,6 +56,9 @@ const cartSocketListeners = async (socket) => {
       socket.on('resume-sale',() => {
             resumeHeldSale(socket,id,cart)
       })
+      socket.on('calculate-collection', (data) => {
+            calculateCollection(socket,data)   
+      }) 
 }
 module.exports = cartSocketListeners
 

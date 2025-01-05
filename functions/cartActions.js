@@ -5,12 +5,8 @@ const {errorHandler, successMessageHandler} = require('../utils/util')
 const { validateIfNumber, validateIfString, validateMultipleNumbers } = require('../utils/validationUtils')
 
 //Calculates the totals provided with the cart array
-const totalCalculator = (product) => {
-    let total = 0
-    product.forEach((product) => {
-        total += product.subTotal
-    })
-    return total
+const totalCalculator = (products) => {
+      return products.reduce((total,product) => total + product.subTotal, 0)
 }
 
 //Function to add to cart
@@ -42,7 +38,8 @@ const addToCart = async (socket,cart,data) => {
        }else if(discountType === 'flat') {
           goneDiscount = discount
        }else {
-          return errorHandler(socket,'I donno what type of fucked scenario would cause this kind of error')
+            errorHandler(socket,'Invalid discount type detected on product. Not accounted for')
+            goneDiscount = 0
        }
        
        const productSubTotal = ((Number(data.qty) * Number(price)) + taxes) - goneDiscount
@@ -64,7 +61,7 @@ const addToCart = async (socket,cart,data) => {
 
         if (existingProductIndex !== -1) {
              const data = { prodIndex: existingProductIndex, qty: cart.cartProducts[existingProductIndex].qty + 1 };
-             return updateInCart(socket, cart, data);
+             return await updateInCart(socket, cart, data);
           }
           
        cart.cartProducts.push(product)
@@ -75,7 +72,7 @@ const addToCart = async (socket,cart,data) => {
        successMessageHandler(socket, `${product.name} Added to cart`)
 }
 
-const updateInCart = (socket,cart,data) => {
+const updateInCart = async (socket,cart,data) => {
     try{
           let {prodIndex, qty} = data 
 
@@ -118,7 +115,7 @@ const updateInCart = (socket,cart,data) => {
                 }
                 
           }
-          validateAgainstProductStock(productToUpdate)
+          await validateAgainstProductStock(productToUpdate)
     
           let subTotal
           const {discount, discountType} = productToUpdate
