@@ -1,3 +1,4 @@
+const Collection = require('../models/collection.model')
 const Config = require("../models/config.model")
 const Product = require("../models/product.model")
 const { messageHandler, successMessageHandler, errorHandler} = require("../utils/util")
@@ -26,6 +27,10 @@ const inventoryUpdate = async (socket,savedTransaction) => {
         //Loop through item list
             for(const item of items) {
                const productToUpdate = await Product.findById(item.itemId)
+               if(!productToUpdate) {
+                    const collectionToUpdate = await Collection.findById(item.itemId)
+                    return stockHandler(socket,collectionToUpdate,item)
+               }
 
              //Passed to the stock handler function
                stockHandler(socket,productToUpdate,item)
@@ -39,14 +44,6 @@ const inventoryUpdate = async (socket,savedTransaction) => {
 
    
 }
-
-const inventoryManagementHandlers = {
-        checkProduct: (productToUpdate) => handleProductValidity(productToUpdate),
-        checkStock: (inStock) => handleProductStockCheck(inStock),
-        updateStock: (productToUpdate) => handleProductStockUpdate(productToUpdate)
-
-}
-
 //Manages stock - stock alerts and the actual inventory update
 const stockHandler = async (socket, productToUpdate,item) => {
     try{

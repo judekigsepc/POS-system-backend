@@ -1,5 +1,6 @@
 const Product = require('../models/product.model')
 const Transaction = require('../models/transaction.model')
+const Collection = require('../models/collection.model')
 
 const {errorHandler, successMessageHandler} = require('../utils/util')
 const { validateIfNumber, validateIfString, validateMultipleNumbers } = require('../utils/validationUtils')
@@ -11,6 +12,7 @@ const totalCalculator = (products) => {
 
 //Function to add to cart
 const addToCart = async (socket,cart,data) => {
+      console.log('From cart we received something')
     if (!socket && !data && !cart) {
           return console.error(socket, 'Internal server error');     
     }
@@ -24,7 +26,13 @@ const addToCart = async (socket,cart,data) => {
        //Check if product exists in database
        const wantedProduct = await Product.findById(data.prodId)
        if(!wantedProduct) {
-            errorHandler(socket, 'Product Not found in database')
+            const wantedCollection = await Collection.findById(data.prodId)
+            if(!wantedCollection) {
+                return errorHandler(socket, 'Product or Collection not found in database')
+            }else {
+                 return collectionHandler(socket,cart,wantedCollection)
+            }
+           
        }
 
        const {name, price,taxes,discount,discountType,units,sku,_id,inStock} = wantedProduct
@@ -32,6 +40,7 @@ const addToCart = async (socket,cart,data) => {
        if(inStock <= 0) {
           return errorHandler(socket, `${name} is OUT OF STOCK - If you think this is wrong please contact system admin`)
        }
+
        let goneDiscount
        if(discountType === 'percent') {
           goneDiscount = discount /100 * price
@@ -54,6 +63,7 @@ const addToCart = async (socket,cart,data) => {
              discountType:discountType,
              qty: data.qty,
              units:units,
+             type:'product'
        }
 
       
@@ -68,7 +78,7 @@ const addToCart = async (socket,cart,data) => {
        cart.cartTotal = totalCalculator(cart.cartProducts)
        
        const {cartTotal} = cart
-       socket.emit('result',{product, cartTotal})
+       socket.emit('cart-add-result',{product, cartTotal})
        successMessageHandler(socket, `${product.name} Added to cart`)
 }
 
@@ -207,6 +217,31 @@ const discountCart = (socket,cart,data) => {
        errorHandler(socket, 'Discount error: Please check your values(Discount type parameter should be FLAT OR PERCENT)')
     }
     
+}
+
+const collectionHandler = async (socket,cart,collection) => {
+    const collectionData = {
+             id: collection._id,
+             name: collection.name,
+             price:collection.priceValue, 
+             subTotal:collection.priceValue,
+             sku: collection.collectionCode,
+             tax:0,
+             discount:collection.discount,
+             discountType:collection.discountType,
+             qty: 1,
+             units:'null',
+             type:'collection'
+    }
+    console.log(collectionData,'collectionData')
+
+    cart.cartProducts.push(collectionData)
+    cart.cartTotal = totalCalculator(cart.cartProducts)
+
+    const {cartTotal} = cart
+    console.log(cartTotal,'cartTotal')
+
+    socket.emit('cart-add-result',{product:collectionData, cartTotal})
 }
 
 module.exports = {

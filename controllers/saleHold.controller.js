@@ -1,9 +1,13 @@
 const HeldSale = require("../models/heldSale.model");
+const Product = require("../models/product.model");
 const { crudErrorHanlder,resultSender } = require("../utils/handlerUtils");
 
 const holdSale = async (req,res) => {
     try {
         const hold = await HeldSale.create(req.body)
+          .lean()
+          .populate('executor' ,'name')
+
         resultSender('Transaction held successfuly', hold, res)
     }
     catch(err){
@@ -14,6 +18,11 @@ const holdSale = async (req,res) => {
 const getHeldSales = async (req,res) => {
     try {
         const heldTransactions = await HeldSale.find({})
+              .lean()
+              .populate('executor','names')
+              .populate('collections', 'name price')
+              .populate('products', 'name price')
+      
         resultSender('hold results', heldTransactions, res)
     }
     catch(err) {
@@ -39,3 +48,4 @@ module.exports = {
     getHeldSales,
     getSingleHeldSale
 }
+

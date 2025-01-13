@@ -5,6 +5,7 @@ const { clearCart } = require('./cartInventoryManager')
 const { holdSale,resumeHeldSale } = require('./saleHoldActions')
 const { addToCart,updateInCart,deleteInCart,discountCart } = require('./cartActions')
 const {calculateCollection} = require('./collectionActions')
+const { successMessageHandler } = require('../utils/util')
 
 
 const cartSocketListeners = async (socket) => {
@@ -18,6 +19,11 @@ const cartSocketListeners = async (socket) => {
             payed : 0,
             change:0,
       }
+      
+      socket.on('get_full_cart',() => {
+            socket.emit('full_cart_result',(cart))
+            successMessageHandler(socket, 'Loaded full cart')
+      })
 
       socket.on('add_to_cart', async (data) => {
               await addToCart(socket,cart,data)
@@ -53,8 +59,8 @@ const cartSocketListeners = async (socket) => {
       socket.on('hold-sale', (executor) => {
             holdSale(socket,cart,executor)
       })
-      socket.on('resume-sale',() => {
-            resumeHeldSale(socket,id,cart)
+      socket.on('resume-sale',(saleId) => {
+            resumeHeldSale(socket,cart,saleId)
       })
       socket.on('calculate-collection', (data) => {
             calculateCollection(socket,data)   

@@ -1,9 +1,11 @@
+const { default: mongoose } = require('mongoose')
 const Collection = require('../models/collection.model')
 const { crudErrorHanlder, availChecker, resultSender } = require('../utils/handlerUtils')
 
 const getAllCollections = async (req,res) => {
     try{
          const collections = await Collection.find({})
+        
          resultSender('Collections retrieved successfuly',collections,res)
     }catch(err) {
          crudErrorHanlder('Retrieving categories failed',err,res)
@@ -14,6 +16,7 @@ const getAllCollections = async (req,res) => {
 const getSingleCollection = async (req,res) => {
     try{
         const {id} = req.params
+
         const collection = await Collection.findById(id)
 
         availChecker(collection,'Collection not found')
@@ -63,6 +66,7 @@ const updateCollection = async (req,res) => {
        try {
           const {id} = req.params
           
+          console.log(id)
           const result = await Collection.findByIdAndUpdate(id, req.body, {new:true})
           availChecker(result, 'Collection not found for update')
 
@@ -75,6 +79,7 @@ const updateCollection = async (req,res) => {
          return crudErrorHanlder('Collection update failed',err,res)
        }
 }
+
 
 module.exports = {
     createCollection,

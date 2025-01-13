@@ -5,14 +5,15 @@ const saleHoldSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    products :{
+    products:{
         type: [mongoose.Schema.Types.ObjectId],
         ref:'Product',
         required: true
     },
-    collections:{
+    collections: {
         type:[mongoose.Schema.Types.ObjectId],
         ref:'Collection',
+        required: true
     },
     executor : {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,10 +23,14 @@ const saleHoldSchema = mongoose.Schema({
     reason : {
         type:String,
         default:'No reason specified'
+    },
+    status: {
+        type:String,
+        enum: ['held','resumed'],
     }
 },{timestamps:true})
 
-const HeldSale = mongoose.model('heldTransaction',saleHoldSchema)
+const HeldSale = mongoose.model('heldSale',saleHoldSchema)
 
 module.exports = HeldSale
 

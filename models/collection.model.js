@@ -22,6 +22,9 @@ const collectionSchema = mongoose.Schema({
         type:String,
         default:'This is a category'
     },
+    inStock: {
+        type:Number,
+    },
     stockAlert: {
         type:Boolean,
         default:true,
@@ -49,6 +52,6 @@ const collectionSchema = mongoose.Schema({
     }
 },{timestamps: true})
 
-const Collection = mongoose.model('Category',collectionSchema)
+const Collection = mongoose.model('Collection',collectionSchema)
 
 module.exports = Collection
