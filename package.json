@@ -17,5 +17,17 @@
     "pdfkit": "^0.15.1",
     "puppeteer": "^23.10.1",
     "socket.io": "^4.8.1"
-  }
+  },
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "no### POS System",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"npx tsx --env-file=.env --watch src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

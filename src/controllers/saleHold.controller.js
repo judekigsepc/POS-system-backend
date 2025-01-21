@@ -5,8 +5,6 @@ const { crudErrorHanlder,resultSender } = require("../utils/handlerUtils");
 const holdSale = async (req,res) => {
     try {
         const hold = await HeldSale.create(req.body)
-          .lean()
-          .populate('executor' ,'name')
 
         resultSender('Transaction held successfuly', hold, res)
     }
@@ -21,7 +19,9 @@ const getHeldSales = async (req,res) => {
               .lean()
               .populate('executor','names')
               .populate('collections', 'name price')
-              .populate('products', 'name price')
+              .populate('products.prodId', 'name price')
+
+        console.log(heldTransactions)
       
         resultSender('hold results', heldTransactions, res)
     }

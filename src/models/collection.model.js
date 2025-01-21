@@ -33,19 +33,6 @@ const collectionSchema = mongoose.Schema({
         type:Number,
         default:10
     },
-    priceValue: {
-        type:Number,
-        default:0
-    },
-    discount: {
-        type:Number,
-        default:0,
-    },
-    discountType: {
-        type:String,
-        enum:['percent','flat'],
-        default:'percent'
-    },
     saleable: {
         type:Boolean,
         default:false
